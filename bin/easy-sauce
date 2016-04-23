@@ -1,0 +1,39 @@
+#!/usr/bin/env node
+
+'use strict';
+
+const argv = require('minimist')(process.argv.slice(2));
+const fs = require('fs-extra');
+const path = require('path');
+const easySauce = require('..');
+
+
+if (argv.h || argv.help) {
+  fs.createReadStream(path.join(__dirname, 'usage.txt')).pipe(process.stdout);
+}
+else if (argv.v || argv.version) {
+  let pkg = fs.readJsonSync(path.join(__dirname, '../package.json'));
+  console.log(pkg.version);
+}
+else {
+  let defaultOpts = {
+    'port': 8080,
+    'path': '/test/',
+    'build': Math.floor(Date.now() / 1000),
+    'name': 'JS Unit Tests'
+  };
+
+  let jsonConfig = argv.c || argv.config;
+  let jsonConfigOpts = jsonConfig ? fs.readJsonSync(jsonConfig) : {};
+
+  let cliOpts = {};
+  if (argv.p || argv.port) cliOpts.port = argv.p || argv.port;
+  if (argv.a || argv.path) cliOpts.path = argv.a || argv.path;
+  if (argv.b || argv.build) cliOpts.build = argv.b || argv.build;
+  if (argv.n || argv.name) cliOpts.name = argv.n || argv.name;
+  if (argv.b || argv.platform) cliOpts.platform = argv.b || argv.platform;
+  if (argv.u || argv.username) cliOpts.username = argv.u || argv.username;
+  if (argv.k || argv.key) cliOpts.key = argv.k || argv.key;
+
+  easySauce(Object.assign(defaultOpts, jsonConfigOpts, cliOpts));
+}

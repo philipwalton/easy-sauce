@@ -1,0 +1,39 @@
+
+Usage: easy-sauce [options]
+
+By default, options are fetched from the package.json file in the directory of
+the script running easy-sauce. You can optionally specify a separate JSON file
+to host the config options, or you can pass options directly via the command
+line. Command line options override JSON file config. options, which override
+package.json options.
+
+Options:
+
+  -c, --config      A JSON config file to use instead of package.json.
+
+  -p, --port        The port to run the local server on.
+                    Defaults to "8080"
+
+  -a, --path        The file path of the tests.
+                    Defaults to "/test/"
+
+  -b, --build       The build number to pass to Sauce Labs.
+                    Defaults to the current time: $(date +%s)
+
+  -n, --name        The name of the build to pass to Sauce Labs.
+                    Defaults to "JS Unit Tests".
+
+  -b, --platform    An array of browser and platform capabilities. This should
+                    be a JSON array of arrays, e.g.: '[["Windows 10", "chrome",
+                    "latest"], ["OS X 10.11", "firefox", "latest"]]'.
+                    See https://goo.gl/tPnZDO for details.
+
+  -u, --username    Your Sauce Labs username.
+                    This defaults to the SAUCE_USERNAME environment variable.
+
+  -k, --key         Your Sauce Labs access key.
+                    This defaults to the SAUCE_ACCESS_KEY environment variable.
+
+  -h, --help        Displays this help message.
+
+  -v, --version     Display the easy-sauce version number.
