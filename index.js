@@ -9,22 +9,27 @@ var request = require('request');
 var serveStatic = require('serve-static');
 
 
-// Sets up the configuration options.
-var packageOpts = fs.readJsonSync('./package.json');
-var opts = packageOpts && packageOpts.easySauce || {};
-if (process.env.SAUCE_USERNAME) opts.username = process.env.SAUCE_USERNAME;
-if (process.env.SAUCE_ACCESS_KEY) opts.key = process.env.SAUCE_ACCESS_KEY;
-
-
 // Holds a reference to the connect server so it can be stopped later.
 var server;
 
 
 module.exports = function(overrides) {
 
-  // Update the current options with any passed overrides.
-  Object.assign(opts, overrides);
+  var defaultOpts = {
+    username: process.env.SAUCE_USERNAME,
+    key: process.env.SAUCE_ACCESS_KEY,
+    port: 1337,
+    tests: '/test/',
+    build: Math.floor(Date.now() / 1000),
+    name: 'JS Unit Tests',
+    framework: 'mocha'
+  };
 
+  var packageOpts = getEasySauceOptsFromPackageJson();
+
+  var opts = Object.assign(defaultOpts, packageOpts, overrides);
+
+  // Validates the browsers list before making any API calls.
   if (!opts.browsers) {
     console.error('Oops! A list of browsers/platforms is required.');
     process.exit(1);
@@ -42,6 +47,7 @@ module.exports = function(overrides) {
     }
   }
 
+  // Ensures SauceLabs credentials are set.
   if (!opts.username || !opts.key) {
     console.error('Oops! A Sauce Labs username and access key are required.');
     process.exit(1);
@@ -49,8 +55,8 @@ module.exports = function(overrides) {
 
   return startServer(opts.port)
     .then((port) => createTunnel(port))
-    .then((host) => startJobs(host))
-    .then((jobs) => waitForJobsToFinish(jobs))
+    .then((host) => startJobs(host, opts))
+    .then((jobs) => waitForJobsToFinish(jobs, opts))
     .then((jobs) => {
       server.close();
       ngrok.kill();
@@ -81,7 +87,7 @@ function createTunnel(port) {
 }
 
 
-function startJobs(host) {
+function startJobs(host, opts) {
   return new Promise((resolve, reject) => {
     request({
       url: `https://saucelabs.com/rest/v1/${opts.username}/js-tests`,
@@ -108,7 +114,7 @@ function startJobs(host) {
 }
 
 
-function waitForJobsToFinish(jobs) {
+function waitForJobsToFinish(jobs, opts) {
   var progress = {};
   for (let id of jobs) {
     progress[id] = {};
@@ -194,4 +200,12 @@ function formatPlatform(platform) {
   var version = platform[2];
 
   return `${browser} (${version}) on ${os}`;
+}
+
+function getEasySauceOptsFromPackageJson() {
+  try {
+    return fs.readJsonSync('./package.json').easySauce;
+  } catch(e) {
+    return {};
+  }
 }

@@ -16,14 +16,6 @@ else if (argv.v || argv.version) {
   console.log(pkg.version);
 }
 else {
-  let defaultOpts = {
-    'port': 8080,
-    'tests': '/test/',
-    'build': Math.floor(Date.now() / 1000),
-    'name': 'JS Unit Tests',
-    'framework': 'mocha'
-  };
-
   let jsonConfig = argv.c || argv.config;
   let jsonConfigOpts = jsonConfig ? fs.readJsonSync(jsonConfig) : {};
 
@@ -37,5 +29,5 @@ else {
   if (argv.n || argv.name) cliOpts.name = argv.n || argv.name;
   if (argv.f || argv.framework) cliOpts.framework = argv.f || argv.framework;
 
-  easySauce(Object.assign(defaultOpts, jsonConfigOpts, cliOpts));
+  easySauce(Object.assign({}, jsonConfigOpts, cliOpts));
 }

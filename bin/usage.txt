@@ -18,7 +18,7 @@ Options:
                     This defaults to the SAUCE_ACCESS_KEY environment variable.
 
   -p, --port        The port to run the local server on.
-                    Defaults to "8080"
+                    Defaults to "1337"
 
   -t, --tests       The URL path to the file that loads the tests.
                     Defaults to "/test/"
