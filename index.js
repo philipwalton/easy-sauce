@@ -75,7 +75,7 @@ function startJobs(host) {
         url: host + opts.path,
         framework: opts.framework,
         name: opts.name,
-        build: Math.floor(Date.now() / 1000),
+        build: opts.build,
         idleTimeout: 30
       },
       auth: {
