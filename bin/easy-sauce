@@ -32,7 +32,7 @@ else {
   if (argv.a || argv.path) cliOpts.path = argv.a || argv.path;
   if (argv.b || argv.build) cliOpts.build = argv.b || argv.build;
   if (argv.n || argv.name) cliOpts.name = argv.n || argv.name;
-  if (argv.b || argv.platform) cliOpts.platform = argv.b || argv.platform;
+  if (argv.b || argv.platform) cliOpts.platform = argv.t || argv.platform;
   if (argv.u || argv.username) cliOpts.username = argv.u || argv.username;
   if (argv.k || argv.key) cliOpts.key = argv.k || argv.key;
   if (argv.f || argv.framework) cliOpts.framework = argv.f || argv.framework;

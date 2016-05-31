@@ -25,6 +25,23 @@ module.exports = function(overrides) {
   // Update the current options with any passed overrides.
   Object.assign(opts, overrides);
 
+  if (!opts.platform) {
+    console.error('Oops! A list of browsers/platforms is required.');
+    process.exit(1);
+  }
+  else if (typeof opts.platform == 'string') {
+    try {
+      opts.platform = JSON.parse(opts.platform);
+    }
+    catch(err) {
+      let message = `Option platforms '${opts.platform}' could not be` +
+                    `converted to an array.`;
+
+      console.error(message);
+      process.exit(1);
+    }
+  }
+
   if (!opts.username || !opts.key) {
     console.error('Oops! A Sauce Labs username and access key are required.');
     process.exit(1);

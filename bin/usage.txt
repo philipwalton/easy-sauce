@@ -23,7 +23,7 @@ Options:
   -n, --name        The name of the build to pass to Sauce Labs.
                     Defaults to "JS Unit Tests".
 
-  -b, --platform    An array of browser and platform capabilities. This should
+  -t, --platform    An array of browser and platform capabilities. This should
                     be a JSON array of arrays, e.g.: '[["Windows 10", "chrome",
                     "latest"], ["OS X 10.11", "firefox", "latest"]]'.
                     See https://goo.gl/tPnZDO for details.
