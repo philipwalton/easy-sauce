@@ -18,7 +18,7 @@ else if (argv.v || argv.version) {
 else {
   let defaultOpts = {
     'port': 8080,
-    'path': '/test/',
+    'tests': '/test/',
     'build': Math.floor(Date.now() / 1000),
     'name': 'JS Unit Tests',
     'framework': 'mocha'
@@ -28,13 +28,13 @@ else {
   let jsonConfigOpts = jsonConfig ? fs.readJsonSync(jsonConfig) : {};
 
   let cliOpts = {};
-  if (argv.p || argv.port) cliOpts.port = argv.p || argv.port;
-  if (argv.a || argv.path) cliOpts.path = argv.a || argv.path;
-  if (argv.b || argv.build) cliOpts.build = argv.b || argv.build;
-  if (argv.n || argv.name) cliOpts.name = argv.n || argv.name;
-  if (argv.b || argv.platform) cliOpts.platform = argv.t || argv.platform;
   if (argv.u || argv.username) cliOpts.username = argv.u || argv.username;
   if (argv.k || argv.key) cliOpts.key = argv.k || argv.key;
+  if (argv.p || argv.port) cliOpts.port = argv.p || argv.port;
+  if (argv.t || argv.tests) cliOpts.tests = argv.t || argv.tests;
+  if (argv.b || argv.browsers) cliOpts.browsers = argv.b || argv.browsers;
+  if (argv.d || argv.build) cliOpts.build = argv.d || argv.build;
+  if (argv.n || argv.name) cliOpts.name = argv.n || argv.name;
   if (argv.f || argv.framework) cliOpts.framework = argv.f || argv.framework;
 
   easySauce(Object.assign(defaultOpts, jsonConfigOpts, cliOpts));

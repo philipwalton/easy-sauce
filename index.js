@@ -25,16 +25,16 @@ module.exports = function(overrides) {
   // Update the current options with any passed overrides.
   Object.assign(opts, overrides);
 
-  if (!opts.platform) {
+  if (!opts.browsers) {
     console.error('Oops! A list of browsers/platforms is required.');
     process.exit(1);
   }
-  else if (typeof opts.platform == 'string') {
+  else if (typeof opts.browsers == 'string') {
     try {
-      opts.platform = JSON.parse(opts.platform);
+      opts.browsers = JSON.parse(opts.browsers);
     }
     catch(err) {
-      let message = `Option platforms '${opts.platform}' could not be` +
+      let message = `Option platforms '${opts.browsers}' could not be` +
                     `converted to an array.`;
 
       console.error(message);
@@ -88,8 +88,8 @@ function startJobs(host) {
       method: 'POST',
       json: true,
       body: {
-        platforms: opts.platforms,
-        url: host + opts.path,
+        platforms: opts.browsers,
+        url: host + opts.tests,
         framework: opts.framework,
         name: opts.name,
         build: opts.build,
@@ -101,7 +101,7 @@ function startJobs(host) {
       }
     }, (err, response) => {
       if (err) return reject(err);
-      console.log('Running tests on Sauce Labs for URL: ' + host + opts.path);
+      console.log('Running tests on Sauce Labs for URL: ' + host + opts.tests);
       resolve(response.body['js tests']);
     });
   });
