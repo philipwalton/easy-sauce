@@ -73,7 +73,7 @@ function startJobs(host) {
       body: {
         platforms: opts.platforms,
         url: host + opts.path,
-        framework: 'mocha',
+        framework: opts.framework,
         name: opts.name,
         build: Math.floor(Date.now() / 1000),
         idleTimeout: 30

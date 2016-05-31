@@ -34,6 +34,11 @@ Options:
   -k, --key         Your Sauce Labs access key.
                     This defaults to the SAUCE_ACCESS_KEY environment variable.
 
+  -f, --framework   The test framework you're using. This can be "mocha",
+                    "jasmine", "qunit", "YUI Test", or "custom".
+                    Defaults to "mocha".
+                    See https://goo.gl/5KfjDS for details.
+
   -h, --help        Displays this help message.
 
   -v, --version     Display the easy-sauce version number.

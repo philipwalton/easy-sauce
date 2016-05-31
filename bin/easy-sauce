@@ -20,7 +20,8 @@ else {
     'port': 8080,
     'path': '/test/',
     'build': Math.floor(Date.now() / 1000),
-    'name': 'JS Unit Tests'
+    'name': 'JS Unit Tests',
+    'framework': 'mocha'
   };
 
   let jsonConfig = argv.c || argv.config;
@@ -34,6 +35,7 @@ else {
   if (argv.b || argv.platform) cliOpts.platform = argv.b || argv.platform;
   if (argv.u || argv.username) cliOpts.username = argv.u || argv.username;
   if (argv.k || argv.key) cliOpts.key = argv.k || argv.key;
+  if (argv.f || argv.framework) cliOpts.framework = argv.f || argv.framework;
 
   easySauce(Object.assign(defaultOpts, jsonConfigOpts, cliOpts));
 }
