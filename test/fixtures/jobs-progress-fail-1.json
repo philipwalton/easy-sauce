@@ -1,0 +1,36 @@
+{
+  "completed": false,
+  "js tests": [
+    {
+      "url": "https://saucelabs.com/jobs/da901f07dee941bc9b54ef659b894030",
+      "platform": [
+        "Windows 10",
+        "chrome",
+        "latest"
+      ],
+      "status": "test session in progress",
+      "id": "16e70a1e12a24fa6a79d64bcf36904a2",
+      "job_id": "da901f07dee941bc9b54ef659b894030"
+    },
+    {
+      "status": "test queued",
+      "platform": [
+        "Linux",
+        "firefox",
+        "latest"
+      ],
+      "id": "62248df3c3494c47b489de078d3ac867",
+      "job_id": "job not ready"
+    },
+    {
+      "status": "test queued",
+      "platform": [
+        "OS X 10.11",
+        "safari",
+        "9"
+      ],
+      "id": "6c1c229ce31c442db33019abd101e9e7",
+      "job_id": "job not ready"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "completed": false,
+  "js tests": [
+    {
+      "url": "https://saucelabs.com/jobs/39f40d8138be45d79d71501b550b6da2",
+      "platform": [
+        "Windows 10",
+        "chrome",
+        "latest"
+      ],
+      "result": {
+        "passes": 29,
+        "tests": 30,
+        "end": {},
+        "suites": 7,
+        "reports": [],
+        "start": {},
+        "duration": 103,
+        "failures": 0,
+        "pending": 1
+      },
+      "id": "d4f53202b41048babc564fbe0e1f7f4e",
+      "job_id": "39f40d8138be45d79d71501b550b6da2"
+    },
+    {
+      "url": "https://saucelabs.com/jobs/9942d5b30d084ec2993d0a15670c7bff",
+      "platform": [
+        "Linux",
+        "firefox",
+        "latest"
+      ],
+      "result": {
+        "passes": 29,
+        "tests": 30,
+        "end": "2016-06-02T01:05:33.563Z",
+        "suites": 7,
+        "reports": [],
+        "start": "2016-06-02T01:05:33.499Z",
+        "duration": 64,
+        "failures": 0,
+        "pending": 1
+      },
+      "id": "935402e40daa40e9b7a02e0a41660b05",
+      "job_id": "9942d5b30d084ec2993d0a15670c7bff"
+    },
+    {
+      "url": "https://saucelabs.com/jobs/81cf358d218240caa1fd1c8d76441cd2",
+      "platform": [
+        "OS X 10.11",
+        "safari",
+        "9"
+      ],
+      "status": "test session in progress",
+      "id": "a1f7537357bf49de982e60eedd7a5975",
+      "job_id": "81cf358d218240caa1fd1c8d76441cd2"
+    }
+  ]
+}

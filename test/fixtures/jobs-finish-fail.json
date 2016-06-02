@@ -1,0 +1,88 @@
+{
+  "completed": true,
+  "js tests": [
+    {
+      "url": "https://saucelabs.com/jobs/da901f07dee941bc9b54ef659b894030",
+      "platform": [
+        "Windows 10",
+        "chrome",
+        "latest"
+      ],
+      "result": {
+        "passes": 29,
+        "tests": 30,
+        "end": {},
+        "suites": 7,
+        "reports": [],
+        "start": {},
+        "duration": 95,
+        "failures": 0,
+        "pending": 1
+      },
+      "id": "16e70a1e12a24fa6a79d64bcf36904a2",
+      "job_id": "da901f07dee941bc9b54ef659b894030"
+    },
+    {
+      "url": "https://saucelabs.com/jobs/1d62658980e7492ea47776a205ae9a48",
+      "platform": [
+        "Linux",
+        "firefox",
+        "latest"
+      ],
+      "result": {
+        "passes": 28,
+        "tests": 31,
+        "end": "2016-06-02T21:18:04.659Z",
+        "suites": 7,
+        "reports": [
+          {
+            "stack": "[41]</</<@index.js:7813:1\n",
+            "message": "0 == 1",
+            "titles": [
+              "closest"
+            ],
+            "result": false,
+            "name": "should find a matching parent from a CSS selector"
+          }
+        ],
+        "start": "2016-06-02T21:18:04.588Z",
+        "duration": 71,
+        "failures": 1,
+        "pending": 1
+      },
+      "id": "62248df3c3494c47b489de078d3ac867",
+      "job_id": "1d62658980e7492ea47776a205ae9a48"
+    },
+    {
+      "url": "https://saucelabs.com/jobs/f962d1d4862249a39cc65ca9f255f7b9",
+      "platform": [
+        "OS X 10.11",
+        "safari",
+        "9"
+      ],
+      "result": {
+        "passes": 28,
+        "tests": 31,
+        "end": {},
+        "suites": 7,
+        "reports": [
+          {
+            "stack": "index.js:7813:17",
+            "message": "0 == 1",
+            "titles": [
+              "closest"
+            ],
+            "result": false,
+            "name": "should find a matching parent from a CSS selector"
+          }
+        ],
+        "start": {},
+        "duration": 556,
+        "failures": 1,
+        "pending": 1
+      },
+      "id": "6c1c229ce31c442db33019abd101e9e7",
+      "job_id": "f962d1d4862249a39cc65ca9f255f7b9"
+    }
+  ]
+}
