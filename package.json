@@ -2,7 +2,7 @@
   "name": "easy-sauce",
   "version": "0.2.0",
   "description": "Simple JavaScript unit testing on the Sauce Labs cloud",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "bin": "./bin/easy-sauce",
   "scripts": {
     "lint": "eslint **/*.js",
@@ -18,8 +18,10 @@
     "test",
     "unit",
     "mocha",
+    "jasmine",
     "saucelabs",
-    "sauce"
+    "sauce",
+    "automate"
   ],
   "author": {
     "name": "Philip Walton",
