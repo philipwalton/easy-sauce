@@ -2,32 +2,9 @@
 
 'use strict';
 
-const argv = require('minimist')(process.argv.slice(2));
-const fs = require('fs-extra');
-const path = require('path');
-const easySauce = require('..');
+const minimist = require('minimist');
+const cli = require('../lib/cli');
 
-
-if (argv.h || argv.help) {
-  fs.createReadStream(path.join(__dirname, 'usage.txt')).pipe(process.stdout);
-}
-else if (argv.v || argv.version) {
-  let pkg = fs.readJsonSync(path.join(__dirname, '../package.json'));
-  console.log(pkg.version);
-}
-else {
-  let jsonConfig = argv.c || argv.config;
-  let jsonConfigOpts = jsonConfig ? fs.readJsonSync(jsonConfig) : {};
-
-  let cliOpts = {};
-  if (argv.u || argv.username) cliOpts.username = argv.u || argv.username;
-  if (argv.k || argv.key) cliOpts.key = argv.k || argv.key;
-  if (argv.p || argv.port) cliOpts.port = argv.p || argv.port;
-  if (argv.t || argv.tests) cliOpts.tests = argv.t || argv.tests;
-  if (argv.b || argv.browsers) cliOpts.browsers = argv.b || argv.browsers;
-  if (argv.d || argv.build) cliOpts.build = argv.d || argv.build;
-  if (argv.n || argv.name) cliOpts.name = argv.n || argv.name;
-  if (argv.f || argv.framework) cliOpts.framework = argv.f || argv.framework;
-
-  easySauce(Object.assign({}, jsonConfigOpts, cliOpts));
-}
+// Calls the cli module with the command line arguments.
+let argv = minimist(process.argv.slice(2));
+cli(argv);
