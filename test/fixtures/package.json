@@ -1,0 +1,13 @@
+{
+  "easySauce": {
+    "port": 8080,
+    "platforms": [
+      [
+        "Windows XP",
+        "internet explorer",
+        "8"
+      ]
+    ],
+    "build": "1"
+  }
+}

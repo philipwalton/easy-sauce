@@ -1,0 +1,21 @@
+{
+  "port": 1979,
+  "tests": "/tests/suite.html",
+  "platforms": [
+    [
+      "Windows 10",
+      "chrome",
+      "latest"
+    ],
+    [
+      "Linux",
+      "firefox",
+      "latest"
+    ],
+    [
+      "OS X 10.11",
+      "safari",
+      "9"
+    ]
+  ]
+}
