@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const cli = require('../lib/cli');
 const EasySauce = require('../lib/easy-sauce');
 const Logger = require('../lib/logger');
-const pkg = require('../package.json')
+const pkg = require('../package.json');
 
 
 describe('cli', () => {
@@ -90,7 +90,6 @@ describe('cli', () => {
     let configFile = './test/fixtures/config.json';
     cli({config: configFile});
 
-    let configOpts = fs.readJsonSync(configFile);
     let pkgOpts = fs.readJsonSync('./test/fixtures/package.json').easySauce;
 
     assert(EasySauce.prototype.runTests.calledOnce);
@@ -202,7 +201,7 @@ describe('cli', () => {
 
   it('sets logLevel from the -v, --verbose, -q, or --quite options'/*, () => {
 
-  }*/)
+  }*/);
 
 
   it('favors CLI options over config options', () => {
@@ -212,7 +211,7 @@ describe('cli', () => {
     let configFile = './test/fixtures/config.json';
     cli({
       config: configFile,
-      port: 9999,
+      port: 9999
     });
 
     let configOpts = fs.readJsonSync(configFile);

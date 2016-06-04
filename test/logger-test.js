@@ -1,6 +1,6 @@
-const assert = require('assert');
-const sinon = require('sinon');
-const Logger = require('../lib/logger');
+// const assert = require('assert');
+// const sinon = require('sinon');
+// const Logger = require('../lib/logger');
 
 
 describe('Logger', () => {

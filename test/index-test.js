@@ -2,7 +2,6 @@ const assert = require('assert');
 const sinon = require('sinon');
 const easySauce = require('../');
 const EasySauce = require('../lib/easy-sauce');
-const messages = require('../lib/messages');
 const Logger = require('../lib/logger');
 
 

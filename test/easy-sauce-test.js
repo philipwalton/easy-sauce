@@ -78,10 +78,10 @@ describe('EasySauce', () => {
   // -------------------------------------------------------------------------
 
 
-  describe('runTests', (done) => {
+  describe('runTests', () => {
 
     beforeEach(() => {
-      let jobsStart = getFixture('jobs-start')
+      let jobsStart = getFixture('jobs-start');
       let jobsFinishPass = getFixture('jobs-finish-pass');
 
       sinon.stub(Logger.prototype, 'log');
@@ -115,7 +115,7 @@ describe('EasySauce', () => {
 
       let returnValue = es.runTests();
       assert(returnValue instanceof Promise);
-      returnValue.then(() => done())
+      returnValue.then(() => done());
     });
 
 
@@ -144,7 +144,7 @@ describe('EasySauce', () => {
       let es = new EasySauce(opts);
       let returnValue = es.validateInput();
       assert(returnValue instanceof Promise);
-    })
+    });
 
     it('resolves if there are no validation errors', (done) => {
       let es = new EasySauce(opts);
@@ -235,6 +235,7 @@ describe('EasySauce', () => {
       es1.startServer().then(() => {
         let es2 = new EasySauce(opts);
         es2.startServer().catch((err) => {
+          assert(err);
           es1.server.close();
           done();
         })
@@ -345,7 +346,7 @@ describe('EasySauce', () => {
     it('returns a promise', (done) => {
       sinon.stub(request, 'post', (opts, cb) => {
         setTimeout(() => {
-          cb(null, {body: jobsStartJson}, jobsStartJson)
+          cb(null, {body: jobsStartJson}, jobsStartJson);
         }, 0);
       });
 
@@ -360,7 +361,7 @@ describe('EasySauce', () => {
     it('resolves with the result of the API call', (done) => {
       sinon.stub(request, 'post', (opts, cb) => {
         setTimeout(() => {
-          cb(null, {body: jobsStartJson}, jobsStartJson)
+          cb(null, {body: jobsStartJson}, jobsStartJson);
         }, 0);
       });
 
@@ -376,13 +377,13 @@ describe('EasySauce', () => {
     it('Logs a message on success', (done) => {
       sinon.stub(request, 'post', (opts, cb) => {
         setTimeout(() => {
-          cb(null, {body: jobsStartJson}, jobsStartJson)
+          cb(null, {body: jobsStartJson}, jobsStartJson);
         }, 0);
       });
 
       let es = new EasySauce(opts);
       es.baseUrl = 'http://xxx.ngrok.com'; // Stubs baseUrl.
-      es.startJobs().then((jobs) => {
+      es.startJobs().then(() => {
         assert(Logger.prototype.log.calledOnce);
         assert(Logger.prototype.log.calledWith(
             messages.JOBS_STARTED + es.baseUrl + es.opts.tests));
@@ -396,7 +397,7 @@ describe('EasySauce', () => {
     it('rejects if the API returns an error', (done) => {
       sinon.stub(request, 'post', (opts, cb) => {
         setTimeout(() => {
-          cb(null, {statusCode: 401}, jobsStartErrorJson)
+          cb(null, {statusCode: 401}, jobsStartErrorJson);
         }, 0);
       });
 
@@ -436,7 +437,7 @@ describe('EasySauce', () => {
 
   describe('waitForJobsToFinish', () => {
 
-    let jobsStart = getFixture('jobs-start')
+    let jobsStart = getFixture('jobs-start');
     let jobsProgressPass1 = getFixture('jobs-progress-pass-1');
     let jobsProgressPass2 = getFixture('jobs-progress-pass-2');
     let jobsProgressPass3 = getFixture('jobs-progress-pass-3');
@@ -454,7 +455,7 @@ describe('EasySauce', () => {
     it('returns a promise', () => {
       sinon.stub(request, 'post', (opts, cb) => {
         setTimeout(() => {
-          cb(null, {body: jobsFinishPass}, jobsFinishPass)
+          cb(null, {body: jobsFinishPass}, jobsFinishPass);
         }, 0);
       });
 
@@ -520,7 +521,7 @@ describe('EasySauce', () => {
       let es = new EasySauce(opts);
       let jobs = jobsStart['js tests'];
       es.POLL_INTERVAL = 0;
-      es.waitForJobsToFinish(jobs).then((jobs) => {
+      es.waitForJobsToFinish(jobs).then(() => {
         assert.equal(Logger.prototype.log.callCount, 8);
         assert(Logger.prototype.log.getCall(0).calledWith(
             'chrome (latest) on Windows 10 : test session in progress'));
@@ -571,6 +572,7 @@ describe('EasySauce', () => {
 
       assert.equal(Logger.prototype.log.callCount, 1);
       assert(Logger.prototype.log.calledWith('All tests pass!'));
+      assert.equal(results, 0);
 
       Logger.prototype.log.restore();
     });
@@ -585,6 +587,7 @@ describe('EasySauce', () => {
 
       assert.equal(Logger.prototype.log.callCount, 1);
       assert(Logger.prototype.log.calledWith('Oops! There were 2 failures!'));
+      assert.equal(results, 1);
 
       Logger.prototype.log.restore();
     });
