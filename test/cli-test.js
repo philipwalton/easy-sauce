@@ -199,9 +199,27 @@ describe('cli', () => {
   });
 
 
-  it('sets logLevel from the -v, --verbose, -q, or --quite options'/*, () => {
+  it('sets logLevel from the -v, --verbose, -q, or --quite options', () => {
+    cli({});
+    let firstThisValue = EasySauce.prototype.runTests.lastCall.thisValue;
+    assert.equal(firstThisValue.logger.logLevel, Logger.logLevel.NORMAL);
 
-  }*/);
+    cli({v: true});
+    let secondThisValue = EasySauce.prototype.runTests.lastCall.thisValue;
+    assert.equal(secondThisValue.logger.logLevel, Logger.logLevel.VERBOSE);
+
+    cli({verbose: true});
+    let thirdThisValue = EasySauce.prototype.runTests.lastCall.thisValue;
+    assert.equal(thirdThisValue.logger.logLevel, Logger.logLevel.VERBOSE);
+
+    cli({q: true});
+    let fourthThisValue = EasySauce.prototype.runTests.lastCall.thisValue;
+    assert.equal(fourthThisValue.logger.logLevel, Logger.logLevel.QUIET);
+
+    cli({quiet: true});
+    let fifthThisValue = EasySauce.prototype.runTests.lastCall.thisValue;
+    assert.equal(fifthThisValue.logger.logLevel, Logger.logLevel.QUIET);
+  });
 
 
   it('favors CLI options over config options', () => {

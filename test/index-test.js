@@ -64,6 +64,22 @@ describe('index', () => {
   });
 
 
-  it('uses the passed logLevel option');
+  it('uses the passed logLevel option', (done) => {
+    sinon.stub(Logger.prototype, 'error');
+
+    easySauce({logLevel: Logger.logLevel.VERBOSE}).then(() => {
+      let loggerInstance = Logger.prototype.error.lastCall.thisValue;
+      assert.equal(loggerInstance.logLevel, Logger.logLevel.VERBOSE);
+
+      easySauce({logLevel: Logger.logLevel.QUIET}).then(() => {
+        let loggerInstance = Logger.prototype.error.lastCall.thisValue;
+        assert.equal(loggerInstance.logLevel, Logger.logLevel.QUIET);
+        Logger.prototype.error.restore();
+        done();
+      })
+      .catch(console.error.bind(console));
+    })
+    .catch(console.error.bind(console));
+  });
 
 });
