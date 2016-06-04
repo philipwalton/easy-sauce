@@ -111,7 +111,7 @@ describe('cli', () => {
   });
 
 
-  it('uses SauceLabs credentials from the ENV variables if set', () => {
+  it('uses Sauce Labs credentials from the ENV variables if set', () => {
     process.env.SAUCE_USERNAME = 'me';
     process.env.SAUCE_ACCESS_KEY = 'password';
 
