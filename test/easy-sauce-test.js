@@ -330,8 +330,8 @@ describe('EasySauce', () => {
 
   describe('startJobs', () => {
 
-    let jobsStartJson = getFixture('jobs-start');
-    let jobsStartErrorJson = getFixture('jobs-start-error');
+    let jobsStart = getFixture('jobs-start');
+    let jobsError = getFixture('jobs-error');
 
     beforeEach(() => {
       sinon.stub(Logger.prototype, 'log');
@@ -346,7 +346,7 @@ describe('EasySauce', () => {
     it('returns a promise', (done) => {
       sinon.stub(request, 'post', (opts, cb) => {
         setTimeout(() => {
-          cb(null, {body: jobsStartJson}, jobsStartJson);
+          cb(null, {body: jobsStart}, jobsStart);
         }, 0);
       });
 
@@ -361,13 +361,13 @@ describe('EasySauce', () => {
     it('resolves with the result of the API call', (done) => {
       sinon.stub(request, 'post', (opts, cb) => {
         setTimeout(() => {
-          cb(null, {body: jobsStartJson}, jobsStartJson);
+          cb(null, {body: jobsStart}, jobsStart);
         }, 0);
       });
 
       let es = new EasySauce(opts);
       es.startJobs().then((jobs) => {
-        assert.deepEqual(jobs, jobsStartJson['js tests']);
+        assert.deepEqual(jobs, jobsStart['js tests']);
         done();
       })
       .catch(console.error.bind(console));
@@ -377,7 +377,7 @@ describe('EasySauce', () => {
     it('Logs a message on success', (done) => {
       sinon.stub(request, 'post', (opts, cb) => {
         setTimeout(() => {
-          cb(null, {body: jobsStartJson}, jobsStartJson);
+          cb(null, {body: jobsStart}, jobsStart);
         }, 0);
       });
 
@@ -397,7 +397,7 @@ describe('EasySauce', () => {
     it('rejects if the API returns an error', (done) => {
       sinon.stub(request, 'post', (opts, cb) => {
         setTimeout(() => {
-          cb(null, {statusCode: 401}, jobsStartErrorJson);
+          cb(null, {statusCode: 401}, jobsError);
         }, 0);
       });
 
@@ -405,7 +405,7 @@ describe('EasySauce', () => {
       es.baseUrl = 'http://xxx.ngrok.com'; // Stubs baseUrl.
       es.startJobs().catch((err) => {
         assert.equal(err.message,
-            messages.JOBS_ERROR + '(401) Not authorized');
+            messages.JOBS_START_ERROR + '(401) Not authorized');
 
         done();
       })
@@ -438,6 +438,7 @@ describe('EasySauce', () => {
   describe('waitForJobsToFinish', () => {
 
     let jobsStart = getFixture('jobs-start');
+    let jobsError = getFixture('jobs-error');
     let jobsProgressPass1 = getFixture('jobs-progress-pass-1');
     let jobsProgressPass2 = getFixture('jobs-progress-pass-2');
     let jobsProgressPass3 = getFixture('jobs-progress-pass-3');
@@ -549,9 +550,40 @@ describe('EasySauce', () => {
 
     });
 
-    it('rejects if any of the tests are not found');
-    it('rejects if the API returns an error');
-    it('rejects if there is an error making the request');
+    it('rejects if the API returns an error', (done) => {
+      sinon.stub(request, 'post', (opts, cb) => {
+        setTimeout(() => {
+          cb(null, {statusCode: 401}, jobsError);
+        }, 0);
+      });
+
+      let es = new EasySauce(opts);
+      let jobs = jobsStart['js tests'];
+      es.POLL_INTERVAL = 0;
+      es.waitForJobsToFinish(jobs).catch((err) => {
+        assert.equal(err.message,
+            messages.JOBS_PROGRESS_ERROR + '(401) Not authorized');
+
+        done();
+      })
+      .catch(console.error.bind(console));
+    });
+
+
+    it('rejects if there is an error making the request', (done) => {
+      sinon.stub(request, 'post', (opts, cb) => {
+        setTimeout(() => cb(new Error()));
+      });
+
+      let es = new EasySauce(opts);
+      let jobs = jobsStart['js tests'];
+      es.POLL_INTERVAL = 0;
+      es.waitForJobsToFinish(jobs).catch((err) => {
+        assert(err instanceof Error);
+        done();
+      })
+      .catch(console.error.bind(console));
+    });
 
   });
 
