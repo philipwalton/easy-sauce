@@ -4,8 +4,8 @@ Usage: easy-sauce [options]
 By default, options are fetched from the package.json file in the directory of
 the script running easy-sauce. You can optionally specify a separate JSON file
 to host the config options, or you can pass options directly via the command
-line. Command line options override JSON file config. options, which override
-package.json options.
+line. Command line options override config options in package.json or the
+specified JSON config file.
 
 Options:
 
