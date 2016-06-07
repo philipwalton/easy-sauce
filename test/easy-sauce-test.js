@@ -58,27 +58,26 @@ describe('EasySauce', () => {
     });
 
 
-    it('stores a passed logger on the instance', () => {
-      let logger = new Logger();
-      let es = new EasySauce({}, logger);
-      assert.equal(es.logger, logger);
-    });
+    it('creates a new logger based on the verbose/quiet options', () => {
+      assert.equal(new EasySauce({}).logger.logLevel,
+                   Logger.logLevel.NORMAL);
 
+      assert.equal(new EasySauce({verbose: true}).logger.logLevel,
+                   Logger.logLevel.VERBOSE);
 
-    it('creates a new logger if none is passed', () => {
-      let es = new EasySauce({});
-      assert(es.logger instanceof Logger);
+      assert.equal(new EasySauce({quiet: true}).logger.logLevel,
+                   Logger.logLevel.QUIET);
     });
 
   });
 
 
   //
-  // EasySauce::runTests()
+  // EasySauce::runTestsAndLogResults()
   // -------------------------------------------------------------------------
 
 
-  describe('runTests', () => {
+  describe('runTestsAndLogResults', () => {
 
     beforeEach(() => {
       let jobsStart = getFixture('jobs-start');
@@ -109,25 +108,17 @@ describe('EasySauce', () => {
     });
 
 
-    it('returns a promise', (done) => {
-      let es = new EasySauce(opts);
-      es.POLL_INTERVAL = 0;
+    it('returns a Logger instance', (done) => {
+      let es = new EasySauce();
+      let returnValue = es.runTestsAndLogResults();
+      assert(returnValue instanceof Logger);
 
-      let returnValue = es.runTests();
-      assert(returnValue instanceof Promise);
-      returnValue.then(() => done());
-    });
+      // Unhandled errors cause problems, so handler must be registered.
+      returnValue.on('error', (err) => assert(err));
+      returnValue.on('end', done);
 
-
-    it('resolves with the test pass/fail status', (done) => {
-      let es = new EasySauce(opts);
-      es.POLL_INTERVAL = 0;
-      es.runTests().then((status) => {
-        assert.equal(status, 0);
-        assert(Logger.prototype.log.calledWith('All tests pass!'));
-        done();
-      })
-      .catch(console.error.bind(console));
+      // Puts the stream into flowing mode.
+      returnValue.resume();
     });
 
   });
@@ -151,8 +142,7 @@ describe('EasySauce', () => {
       es.validateInput().then(() => {
         assert(es.opts);
         done();
-      })
-      .catch(console.error.bind(console));
+      });
     });
 
 
@@ -161,8 +151,7 @@ describe('EasySauce', () => {
       es.validateInput().catch((err) => {
         assert.equal(err.message, messages.BROWSERS_REQUIRED);
         done();
-      })
-      .catch(console.error.bind(console));
+      });
     });
 
 
@@ -177,8 +166,7 @@ describe('EasySauce', () => {
       es.validateInput().catch((err) => {
         assert.equal(err.message, messages.CREDENTIALS_REQUIRED);
         done();
-      })
-      .catch(console.error.bind(console));
+      });
     });
 
   });
@@ -201,8 +189,7 @@ describe('EasySauce', () => {
       returnValue.then(() => {
         es.server.close();
         done();
-      })
-      .catch(console.error.bind(console));
+      });
     });
 
 
@@ -212,8 +199,7 @@ describe('EasySauce', () => {
         assert(es.server.listening);
         es.server.close();
         done();
-      })
-      .catch(console.error.bind(console));
+      });
     });
 
 
@@ -225,8 +211,7 @@ describe('EasySauce', () => {
             messages.SERVER_STARTED + es.opts.port));
         es.server.close();
         done();
-      })
-      .catch(console.error.bind(console));
+      });
     });
 
 
@@ -238,8 +223,7 @@ describe('EasySauce', () => {
           assert(err);
           es1.server.close();
           done();
-        })
-        .catch(console.error.bind(console));
+        });
       });
     });
 
@@ -285,8 +269,7 @@ describe('EasySauce', () => {
         assert(es.baseUrl);
         assert(ngrok.connect.calledOnce);
         done();
-      })
-      .catch(console.error.bind(console));
+      });
     });
 
 
@@ -302,8 +285,7 @@ describe('EasySauce', () => {
             messages.TUNNEL_CREATED + es.opts.port));
 
         done();
-      })
-      .catch(console.error.bind(console));
+      });
     });
 
 
@@ -316,8 +298,7 @@ describe('EasySauce', () => {
       es.createTunnel().catch((err) => {
         assert(err);
         done();
-      })
-      .catch(console.error.bind(console));
+      });
     });
 
   });
@@ -369,8 +350,7 @@ describe('EasySauce', () => {
       es.startJobs().then((jobs) => {
         assert.deepEqual(jobs, jobsStart['js tests']);
         done();
-      })
-      .catch(console.error.bind(console));
+      });
     });
 
 
@@ -389,8 +369,7 @@ describe('EasySauce', () => {
             messages.JOBS_STARTED + es.baseUrl + es.opts.tests));
 
         done();
-      })
-      .catch(console.error.bind(console));
+      });
     });
 
 
@@ -408,8 +387,7 @@ describe('EasySauce', () => {
             messages.JOBS_START_ERROR + '(401) Not authorized');
 
         done();
-      })
-      .catch(console.error.bind(console));
+      });
     });
 
 
@@ -423,8 +401,7 @@ describe('EasySauce', () => {
       es.startJobs().catch((err) => {
         assert(err instanceof Error);
         done();
-      })
-      .catch(console.error.bind(console));
+      });
     });
 
   });
@@ -493,8 +470,7 @@ describe('EasySauce', () => {
       es.waitForJobsToFinish(jobs).then((jobs) => {
         assert.deepEqual(jobs, jobsFinishPass['js tests']);
         done();
-      })
-      .catch(console.error.bind(console));
+      });
 
     });
 
@@ -545,8 +521,7 @@ describe('EasySauce', () => {
             '30 tests, 29 passes, 0 failures'));
 
         done();
-      })
-      .catch(console.error.bind(console));
+      });
 
     });
 
@@ -565,8 +540,7 @@ describe('EasySauce', () => {
             messages.JOBS_PROGRESS_ERROR + '(401) Not authorized');
 
         done();
-      })
-      .catch(console.error.bind(console));
+      });
     });
 
 
@@ -581,8 +555,7 @@ describe('EasySauce', () => {
       es.waitForJobsToFinish(jobs).catch((err) => {
         assert(err instanceof Error);
         done();
-      })
-      .catch(console.error.bind(console));
+      });
     });
 
   });
@@ -600,28 +573,49 @@ describe('EasySauce', () => {
 
       let es = new EasySauce(opts);
       let jobs = getFixture('jobs-finish-pass')['js tests'];
-      let results = es.reportResults(jobs);
 
+      es.reportResults(jobs);
       assert.equal(Logger.prototype.log.callCount, 1);
       assert(Logger.prototype.log.calledWith('All tests pass!'));
-      assert.equal(results, 0);
 
       Logger.prototype.log.restore();
     });
 
 
-    it('logs failed test results', () => {
+    it('stores the results on the logger', () => {
       sinon.stub(Logger.prototype, 'log');
+      sinon.spy(EasySauce.prototype, 'reportResults');
 
       let es = new EasySauce(opts);
-      let jobs = getFixture('jobs-finish-fail')['js tests'];
-      let results = es.reportResults(jobs);
+      let jobsPass = getFixture('jobs-finish-pass')['js tests'];
+      let jobsFail = getFixture('jobs-finish-fail')['js tests'];
 
-      assert.equal(Logger.prototype.log.callCount, 1);
-      assert(Logger.prototype.log.calledWith('Oops! There were 2 failures!'));
-      assert.equal(results, 1);
+      es.reportResults(jobsPass);
+      assert.equal(EasySauce.prototype.reportResults.callCount, 1);
+
+      let passCall = EasySauce.prototype.reportResults.lastCall;
+      assert.equal(passCall.thisValue.logger.results, jobsPass);
+
+      assert.throws(() => {
+        es.reportResults(jobsFail);
+        assert.equal(EasySauce.prototype.reportResults.callCount, 2);
+
+        let failCall = EasySauce.prototype.reportResults.lastCall;
+        assert.equal(failCall.thisValue.logger.results, jobsFail);
+      });
 
       Logger.prototype.log.restore();
+      EasySauce.prototype.reportResults.restore();
+    });
+
+
+    it('throws with failed test results', () => {
+      let es = new EasySauce(opts);
+      let jobs = getFixture('jobs-finish-fail')['js tests'];
+
+      assert.throws(() => {
+        es.reportResults(jobs);
+      }, /failures/);
     });
 
   });

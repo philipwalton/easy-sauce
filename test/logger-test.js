@@ -45,83 +45,80 @@ describe('Logger', () => {
 
   describe('log', () => {
 
-    it('outputs to stdout when not in quiet mode', () => {
-      sinon.stub(process.stdout, 'write');
+    it('adds a message to the stream', () => {
+      sinon.stub(Logger.prototype, 'push');
 
       new Logger().log('foo');
-      assert(process.stdout.write.calledOnce);
-      assert(process.stdout.write.calledWith(sinon.match('foo')));
+      assert(Logger.prototype.push.calledOnce);
+      assert(Logger.prototype.push.calledWith(sinon.match('foo')));
 
       new Logger(Logger.logLevel.VERBOSE).log('bar');
-      assert(process.stdout.write.calledTwice);
-      assert(process.stdout.write.calledWith(sinon.match('bar')));
+      assert(Logger.prototype.push.calledTwice);
+      assert(Logger.prototype.push.calledWith(sinon.match('bar')));
 
       new Logger(Logger.logLevel.QUIET).log('quz');
-      assert(process.stdout.write.calledTwice);
-      assert(process.stdout.write.neverCalledWith(sinon.match('quz')));
+      assert(Logger.prototype.push.calledTwice);
+      assert(Logger.prototype.push.neverCalledWith(sinon.match('quz')));
 
-      process.stdout.write.restore();
+      Logger.prototype.push.restore();
     });
 
   });
 
 
   //
-  // Logger::debug()
+  // Logger::trace()
   // -------------------------------------------------------------------------
 
 
-  describe('debug', () => {
+  describe('trace', () => {
 
-    it('outputs to stdout when in debug mode', () => {
-      sinon.stub(process.stdout, 'write');
+    it('adds a mesasge to the stream when in verbose mode', () => {
+      sinon.stub(Logger.prototype, 'push');
 
-      new Logger(Logger.logLevel.VERBOSE).debug('foo');
-      assert(process.stdout.write.calledOnce);
-      assert(process.stdout.write.calledWith(sinon.match('foo')));
+      new Logger(Logger.logLevel.VERBOSE).trace('foo');
+      assert(Logger.prototype.push.calledOnce);
+      assert(Logger.prototype.push.calledWith(sinon.match('foo')));
 
-      new Logger().debug('bar');
-      assert(process.stdout.write.calledOnce);
-      assert(process.stdout.write.neverCalledWith(sinon.match('bar')));
+      new Logger().trace('bar');
+      assert(Logger.prototype.push.calledOnce);
+      assert(Logger.prototype.push.neverCalledWith(sinon.match('bar')));
 
-      new Logger(Logger.logLevel.QUIET).debug('quz');
-      assert(process.stdout.write.calledOnce);
-      assert(process.stdout.write.neverCalledWith(sinon.match('quz')));
+      new Logger(Logger.logLevel.QUIET).trace('quz');
+      assert(Logger.prototype.push.calledOnce);
+      assert(Logger.prototype.push.neverCalledWith(sinon.match('quz')));
 
-      process.stdout.write.restore();
+      Logger.prototype.push.restore();
     });
 
   });
 
 
   //
-  // Logger::error()
+  // Logger::end()
   // -------------------------------------------------------------------------
 
 
-  describe('error', () => {
+  describe('end', () => {
 
-    it('outputs to stderr in all modes', () => {
-      sinon.stub(process, 'exit');
-      sinon.stub(process.stderr, 'write');
+    it('ends the stream and prevents futher logging', (done) => {
+      sinon.spy(Logger.prototype, 'push');
 
-      new Logger().error('foo');
-      assert(process.exit.calledOnce);
-      assert(process.stderr.write.calledOnce);
-      assert(process.stderr.write.calledWith(sinon.match('foo')));
+      let logger = new Logger();
 
-      new Logger(Logger.logLevel.VERBOSE).error('bar');
-      assert(process.exit.calledTwice);
-      assert(process.stderr.write.calledTwice);
-      assert(process.stderr.write.calledWith(sinon.match('bar')));
+      logger.on('end', () => {
+        assert(Logger.prototype.push.calledOnce);
+        assert(Logger.prototype.push.calledWith(null));
+        Logger.prototype.push.restore();
+        done();
+      });
 
-      new Logger(Logger.logLevel.QUIET).error('quz');
-      assert(process.exit.calledThrice);
-      assert(process.stderr.write.calledThrice);
-      assert(process.stderr.write.calledWith(sinon.match('quz')));
+      // Puts the stream into flowing mode.
+      logger.resume();
 
-      process.exit.restore();
-      process.stderr.write.restore();
+      logger.end();
+      logger.log('foo');
+      logger.trace('bar');
     });
 
   });

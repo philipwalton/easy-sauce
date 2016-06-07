@@ -10,57 +10,74 @@ const pkg = require('../package.json');
 
 describe('cli', () => {
 
-  let helpText = fs.readFileSync('./bin/usage.txt', 'utf-8');
-
-
   beforeEach(() => {
-    sinon.stub(Logger.prototype, 'log');
-    sinon.stub(Logger.prototype, 'error');
-    sinon.stub(EasySauce.prototype, 'runTests').returns(Promise.resolve());
+    // Stubs pipe to call resume to put the stream into flowing mode.
+    sinon.stub(Logger.prototype, 'pipe', Logger.prototype.resume);
+    sinon.stub(EasySauce.prototype, 'runTestsAndLogResults')
+        .returns(new Logger());
   });
 
 
   afterEach(() => {
-    Logger.prototype.log.restore();
-    Logger.prototype.error.restore();
-    EasySauce.prototype.runTests.restore();
+    Logger.prototype.pipe.restore();
+    EasySauce.prototype.runTestsAndLogResults.restore();
   });
 
 
-  it('shows the usage info the -h or --help options', () => {
+  it('shows the usage info given the -h or --help options', (done) => {
+    sinon.stub(process.stdout, 'write', () => {
+      assert(process.stdout.write.lastCall.calledWith(sinon.match(
+          (value) => value.toString().includes('Usage: easy-sauce'))));
+
+      if (process.stdout.write.callCount == 2) {
+        process.stdout.write.restore();
+        done();
+      }
+    });
+
     cli({h: true});
     cli({help: true});
-    assert(Logger.prototype.log.calledTwice);
-    assert(Logger.prototype.log.alwaysCalledWith(helpText));
   });
 
 
-  it('shows the version given the -V or --version options', () => {
+  it('shows the version given the -V or --version options', (done) => {
+    sinon.stub(process.stdout, 'write', () => {
+      assert(process.stdout.write.lastCall.calledWith(sinon.match(
+          (value) => value.toString().includes(pkg.version))));
+
+      if (process.stdout.write.callCount == 2) {
+        process.stdout.write.restore();
+        done();
+      }
+    });
+
     cli({V: true});
     cli({version: true});
-    assert(Logger.prototype.log.calledTwice);
-    assert(Logger.prototype.log.alwaysCalledWith(pkg.version));
   });
 
 
   it('uses data from the -c or --config file option if specified', () => {
     let configFile = './test/fixtures/config.json';
+
     cli({c: configFile});
     cli({config: configFile});
 
-    let configOpts = fs.readJsonSync(configFile);
+    let stub = EasySauce.prototype.runTestsAndLogResults;
 
-    assert(EasySauce.prototype.runTests.calledTwice);
-    let firstThisValue = EasySauce.prototype.runTests.firstCall.thisValue;
-    let secondThisValue = EasySauce.prototype.runTests.secondCall.thisValue;
+    assert(stub.calledTwice);
+    assert(Logger.prototype.pipe.calledTwice);
+
+    let firstThisValue = stub.firstCall.thisValue;
+    let secondThisValue = stub.secondCall.thisValue;
+    let configOpts = fs.readJsonSync(configFile);
 
     assert.equal(firstThisValue.opts.port, configOpts.port);
     assert.equal(firstThisValue.opts.tests, configOpts.tests);
-    assert.deepEqual(firstThisValue.opts.browsers, configOpts.browsers);
+    assert.deepEqual(firstThisValue.opts.platforms, configOpts.platforms);
 
     assert.equal(secondThisValue.opts.port, configOpts.port);
     assert.equal(secondThisValue.opts.tests, configOpts.tests);
-    assert.deepEqual(secondThisValue.opts.browsers, configOpts.browsers);
+    assert.deepEqual(secondThisValue.opts.platforms, configOpts.platforms);
   });
 
 
@@ -72,11 +89,16 @@ describe('cli', () => {
 
     cli({});
 
-    assert(EasySauce.prototype.runTests.calledOnce);
-    let thisValue = EasySauce.prototype.runTests.firstCall.thisValue;
+    let stub = EasySauce.prototype.runTestsAndLogResults;
 
+    assert(stub.calledOnce);
+    assert(Logger.prototype.pipe.calledOnce);
+
+    assert(stub.calledOnce);
+
+    let thisValue = stub.firstCall.thisValue;
     assert.equal(thisValue.opts.port, pkgOpts.port);
-    assert.deepEqual(thisValue.opts.browsers, pkgOpts.browsers);
+    assert.deepEqual(thisValue.opts.platforms, pkgOpts.platforms);
     assert.equal(thisValue.opts.build, pkgOpts.build);
 
     process.cwd.restore();
@@ -90,24 +112,32 @@ describe('cli', () => {
     let configFile = './test/fixtures/config.json';
     cli({config: configFile});
 
+    let stub = EasySauce.prototype.runTestsAndLogResults;
+
     let pkgOpts = fs.readJsonSync('./test/fixtures/package.json').easySauce;
 
-    assert(EasySauce.prototype.runTests.calledOnce);
-    let thisValue = EasySauce.prototype.runTests.firstCall.thisValue;
-
-    assert.notEqual(thisValue.opts.build, pkgOpts.build);
+    assert(stub.calledOnce);
+    assert.notEqual(stub.firstCall.thisValue.opts.build, pkgOpts.build);
 
     process.cwd.restore();
   });
 
 
   it('errors if given an invalid or missing config file', () => {
+    sinon.stub(process.stderr, 'write');
+    sinon.stub(process, 'exit');
+
     cli({c: './config.json'});
     cli({config: './test/fixtures/invalid-config.json'});
 
-    assert(Logger.prototype.error.calledTwice);
-    assert(Logger.prototype.error.alwaysCalledWith(
+    assert(process.exit.calledTwice);
+    assert(process.exit.alwaysCalledWith(1));
+    assert(process.stderr.write.calledTwice);
+    assert(process.stderr.write.alwaysCalledWith(
         sinon.match('No config options found at')));
+
+    process.stderr.write.restore();
+    process.exit.restore();
   });
 
 
@@ -117,11 +147,10 @@ describe('cli', () => {
 
     cli({});
 
-    assert(EasySauce.prototype.runTests.calledOnce);
-
-    let thisValue = EasySauce.prototype.runTests.lastCall.thisValue;
-    assert.equal(thisValue.opts.username, 'me');
-    assert.equal(thisValue.opts.key, 'password');
+    let stub = EasySauce.prototype.runTestsAndLogResults;
+    assert(stub.calledOnce);
+    assert.equal(stub.lastCall.thisValue.opts.username, 'me');
+    assert.equal(stub.lastCall.thisValue.opts.key, 'password');
 
     delete process.env.SAUCE_USERNAME;
     delete process.env.SAUCE_ACCESS_KEU;
@@ -129,96 +158,85 @@ describe('cli', () => {
 
 
   it('uses shorthand command line options if present', () => {
+    let platforms = '[["Windows 10", "chrome", "latest"],' +
+        '["OS X 10.11", "firefox","latest"],["OS X 10.11", "safari", "9"]]';
+
     cli({
-      p: '1979',
+      P: platforms,
       t: '/tests/suite.html',
-      b: [
-        ['Windows 10', 'chrome', 'latest'],
-        ['OS X 10.11', 'firefox', 'latest'],
-        ['OS X 10.11', 'safari', '9']
-      ],
-      d: '1',
+      p: 1979,
+      b: '1',
       n: 'Unit Tests',
-      f: 'custom'
+      f: 'custom',
+      v: true,
+      q: true
     });
 
-    assert(EasySauce.prototype.runTests.calledOnce);
-
-    let thisValue = EasySauce.prototype.runTests.lastCall.thisValue;
-
-    assert.equal(thisValue.opts.port, '1979');
-    assert.equal(thisValue.opts.tests, '/tests/suite.html');
-    assert.deepEqual(thisValue.opts.browsers, [
+    let stub = EasySauce.prototype.runTestsAndLogResults;
+    assert(stub.calledOnce);
+    assert.deepEqual(stub.lastCall.thisValue.opts.platforms, [
       ['Windows 10', 'chrome', 'latest'],
       ['OS X 10.11', 'firefox', 'latest'],
       ['OS X 10.11', 'safari', '9']
     ]);
-    assert.equal(thisValue.opts.build, '1');
-    assert.equal(thisValue.opts.name, 'Unit Tests');
-    assert.equal(thisValue.opts.framework, 'custom');
+    assert.equal(stub.lastCall.thisValue.opts.tests, '/tests/suite.html');
+    assert.equal(stub.lastCall.thisValue.opts.port, 1979);
+    assert.equal(stub.lastCall.thisValue.opts.build, '1');
+    assert.equal(stub.lastCall.thisValue.opts.name, 'Unit Tests');
+    assert.equal(stub.lastCall.thisValue.opts.framework, 'custom');
+    assert.equal(stub.lastCall.thisValue.opts.verbose, true);
+    assert.equal(stub.lastCall.thisValue.opts.quiet, true);
   });
 
 
   it('uses longhand command line options if present', () => {
+    let platforms = '[["Windows 10", "chrome", "latest"],' +
+        '["OS X 10.11", "firefox","latest"],["OS X 10.11", "safari", "9"]]';
+
     cli({
-      port: '1979',
+      platforms: platforms,
       tests: '/tests/suite.html',
-      browsers: [
-        ['Windows 10', 'chrome', 'latest'],
-        ['OS X 10.11', 'firefox', 'latest'],
-        ['OS X 10.11', 'safari', '9']
-      ],
+      port: 1979,
       build: '1',
       name: 'Unit Tests',
-      framework: 'custom'
+      framework: 'custom',
+      verbose: true,
+      quiet: true
     });
 
-    assert(EasySauce.prototype.runTests.calledOnce);
-
-    let thisValue = EasySauce.prototype.runTests.lastCall.thisValue;
-
-    assert.equal(thisValue.opts.port, '1979');
-    assert.equal(thisValue.opts.tests, '/tests/suite.html');
-    assert.deepEqual(thisValue.opts.browsers, [
+    let stub = EasySauce.prototype.runTestsAndLogResults;
+    assert(stub.calledOnce);
+    assert.deepEqual(stub.lastCall.thisValue.opts.platforms, [
       ['Windows 10', 'chrome', 'latest'],
       ['OS X 10.11', 'firefox', 'latest'],
       ['OS X 10.11', 'safari', '9']
     ]);
-    assert.equal(thisValue.opts.build, '1');
-    assert.equal(thisValue.opts.name, 'Unit Tests');
-    assert.equal(thisValue.opts.framework, 'custom');
+    assert.equal(stub.lastCall.thisValue.opts.tests, '/tests/suite.html');
+    assert.equal(stub.lastCall.thisValue.opts.port, 1979);
+    assert.equal(stub.lastCall.thisValue.opts.build, '1');
+    assert.equal(stub.lastCall.thisValue.opts.name, 'Unit Tests');
+    assert.equal(stub.lastCall.thisValue.opts.framework, 'custom');
+    assert.equal(stub.lastCall.thisValue.opts.verbose, true);
+    assert.equal(stub.lastCall.thisValue.opts.quiet, true);
   });
 
 
   it('errors if given an unparseable -P or --platforms option', () => {
-    cli({b: '["Windows 10", "chrome", "50"],["Linux", "firefox", "4"]'});
-    cli({browsers: '"Windows 10", "chrome", "50"'});
-    assert(Logger.prototype.error.calledTwice);
-    assert(Logger.prototype.error.alwaysCalledWith(
+    sinon.stub(process.stderr, 'write');
+    sinon.stub(process, 'exit');
+
+    cli({P: '["Windows 10", "chrome", "50"],["Linux", "firefox", "4"]'});
+    cli({platforms: '"Windows 10", "chrome", "50"'});
+
+
+    assert(process.exit.calledTwice);
+    assert(process.exit.alwaysCalledWith(1));
+    assert(process.stderr.write.calledTwice);
+    assert(process.stderr.write.alwaysCalledWith(
         sinon.match('could not be converted to an array')));
-  });
 
-
-  it('sets logLevel from the -v, --verbose, -q, or --quite options', () => {
-    cli({});
-    let firstThisValue = EasySauce.prototype.runTests.lastCall.thisValue;
-    assert.equal(firstThisValue.logger.logLevel, Logger.logLevel.NORMAL);
-
-    cli({v: true});
-    let secondThisValue = EasySauce.prototype.runTests.lastCall.thisValue;
-    assert.equal(secondThisValue.logger.logLevel, Logger.logLevel.VERBOSE);
-
-    cli({verbose: true});
-    let thirdThisValue = EasySauce.prototype.runTests.lastCall.thisValue;
-    assert.equal(thirdThisValue.logger.logLevel, Logger.logLevel.VERBOSE);
-
-    cli({q: true});
-    let fourthThisValue = EasySauce.prototype.runTests.lastCall.thisValue;
-    assert.equal(fourthThisValue.logger.logLevel, Logger.logLevel.QUIET);
-
-    cli({quiet: true});
-    let fifthThisValue = EasySauce.prototype.runTests.lastCall.thisValue;
-    assert.equal(fifthThisValue.logger.logLevel, Logger.logLevel.QUIET);
+    process.stderr.write.restore();
+    process.exit.restore();
   });
 
 
@@ -233,12 +251,46 @@ describe('cli', () => {
     });
 
     let configOpts = fs.readJsonSync(configFile);
+    let stub = EasySauce.prototype.runTestsAndLogResults;
 
-    assert(EasySauce.prototype.runTests.calledOnce);
-    let thisValue = EasySauce.prototype.runTests.firstCall.thisValue;
+    assert(stub.calledOnce);
+    assert.equal(stub.firstCall.thisValue.opts.port, 9999);
+    assert.equal(stub.firstCall.thisValue.opts.tests, configOpts.tests);
+  });
 
-    assert.equal(thisValue.opts.port, 9999);
-    assert.equal(thisValue.opts.tests, configOpts.tests);
+
+  it('exits with a status code of 1 if an error occurred', () => {
+    sinon.stub(process.stderr, 'write');
+    sinon.stub(process, 'exit');
+
+    cli({});
+    Logger.prototype.pipe.lastCall.thisValue.emit('error', new Error('fail'));
+
+    assert(process.stderr.write.calledOnce);
+    assert(process.stderr.write.calledWith(sinon.match('fail')));
+    assert(process.exit.calledOnce);
+    assert(process.exit.calledWith(1));
+
+    process.stderr.write.restore();
+    process.exit.restore();
+  });
+
+
+  it('exits with a status code of 0 if no errors occured', (done) => {
+    sinon.stub(process, 'exit');
+
+    cli({});
+
+    let logger = Logger.prototype.pipe.lastCall.thisValue;
+
+    logger.on('end', () => {
+      assert(process.exit.calledOnce);
+      assert(process.exit.calledWith(0));
+      process.exit.restore();
+      done();
+    });
+
+    logger.end();
   });
 
 });

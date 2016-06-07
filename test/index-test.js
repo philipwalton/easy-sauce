@@ -19,67 +19,37 @@ let opts = {
 describe('index', () => {
 
   it('creates an EasySauce instance and starts running the tests', () => {
-    sinon.stub(EasySauce.prototype, 'runTests').returns(Promise.resolve());
+    sinon.stub(EasySauce.prototype, 'runTestsAndLogResults')
+        .returns(new Logger());
 
     easySauce(opts);
-    assert(EasySauce.prototype.runTests.calledOnce);
+    assert(EasySauce.prototype.runTestsAndLogResults.calledOnce);
 
-    let calledOn = EasySauce.prototype.runTests.lastCall.thisValue;
+    let calledOn = EasySauce.prototype.runTestsAndLogResults.lastCall.thisValue;
     assert(calledOn instanceof EasySauce);
 
-    EasySauce.prototype.runTests.restore();
+    EasySauce.prototype.runTestsAndLogResults.restore();
   });
 
 
-  it('returns a promise', () => {
-    sinon.stub(EasySauce.prototype, 'runTests').returns(Promise.resolve());
+  it('returns a Logger instance', () => {
+    let promise = Promise.resolve.bind(Promise);
+    sinon.stub(EasySauce.prototype, 'validateInput').returns(promise());
+    sinon.stub(EasySauce.prototype, 'startServer').returns(promise());
+    sinon.stub(EasySauce.prototype, 'createTunnel').returns(promise());
+    sinon.stub(EasySauce.prototype, 'startJobs').returns(promise());
+    sinon.stub(EasySauce.prototype, 'waitForJobsToFinish').returns(promise());
+    sinon.stub(EasySauce.prototype, 'reportResults').returns(promise());
 
     let returnValue = easySauce(opts);
-    assert(returnValue instanceof Promise);
+    assert(returnValue instanceof Logger);
 
-    EasySauce.prototype.runTests.restore();
-  });
-
-
-  it('creates a new Logger instance', () => {
-    sinon.stub(EasySauce.prototype, 'runTests').returns(Promise.resolve());
-
-    easySauce(opts);
-    let calledOn = EasySauce.prototype.runTests.lastCall.thisValue;
-    assert(calledOn.logger instanceof Logger);
-
-    EasySauce.prototype.runTests.restore();
-  });
-
-
-  it('logs any errors that occured in the runTests promise chain', (done) => {
-    sinon.stub(Logger.prototype, 'error');
-
-    easySauce({}).then(() => {
-      assert(Logger.prototype.error.calledOnce);
-      Logger.prototype.error.restore();
-      done();
-    })
-    .catch(console.error.bind(console));
-  });
-
-
-  it('uses the passed logLevel option', (done) => {
-    sinon.stub(Logger.prototype, 'error');
-
-    easySauce({logLevel: Logger.logLevel.VERBOSE}).then(() => {
-      let loggerInstance = Logger.prototype.error.lastCall.thisValue;
-      assert.equal(loggerInstance.logLevel, Logger.logLevel.VERBOSE);
-
-      easySauce({logLevel: Logger.logLevel.QUIET}).then(() => {
-        let loggerInstance = Logger.prototype.error.lastCall.thisValue;
-        assert.equal(loggerInstance.logLevel, Logger.logLevel.QUIET);
-        Logger.prototype.error.restore();
-        done();
-      })
-      .catch(console.error.bind(console));
-    })
-    .catch(console.error.bind(console));
+    EasySauce.prototype.validateInput.restore();
+    EasySauce.prototype.startServer.restore();
+    EasySauce.prototype.createTunnel.restore();
+    EasySauce.prototype.startJobs.restore();
+    EasySauce.prototype.waitForJobsToFinish.restore();
+    EasySauce.prototype.reportResults.restore();
   });
 
 });
