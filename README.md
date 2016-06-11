@@ -11,13 +11,13 @@ Easy Sauce is a Node.js library that makes it easy to run JavaScript unit tests 
 * [Running the tests](#running-the-tests)
 
 
-
 ## Installation
 
 Easy Sauce can be installed from npm by running the following command:
 
 ```sh
 npm install easy-sauce
+
 ```
 
 ## Usage
@@ -81,14 +81,22 @@ Options:
   -V, --version     Display the easy-sauce version number.
 ```
 
-While all `easy-sauce` options can be specified on the command line, it's usually easiest to declare the options in your project's `package.json` file or an external JSON file that you reference via the `-c` or `--config` option.
+While all `easy-sauce` options can be specified on the command line, it's usually easiest to declare the configuration options in an external JSON file that you reference via the `-c` or `--config` option.
 
-When specifying configuration options in the `package.json` file, use the `easySauce` key. Here's an example `package.json` file with Easy Sauce configuration options:
+```sh
+easy-sauce -c path/to/config.json
+```
+
+If you're testing an npm package, you can skip the external configuration file and specify your configuration options directly in `package.json` file under the `"easySauce"` key:
+
 
 ```js
 {
   "name": "my-package",
   "version": "1.0.0",
+  "scripts": {
+    "test": "easy-sauce"
+  },
   // ...
   "easySauce": {
     "path": "/tests/suite.html",
@@ -114,13 +122,24 @@ When specifying configuration options in the `package.json` file, use the `easyS
 }
 ```
 
-While it's possible to specify your Sauce Labs username and access key in your `package.json` file, if you want to keep it secret you can set the `SAUCE_USERNAME` and `SAUCE_ACCESS_KEY` environment variables, and the `--username` and `--key` options will automatically use those values.
+In the above example, the `"tests"` command is also set to `easy-sauce`, so now you can run your tests via npm:
+
+```
+npm test
+```
+
+This setup makes it very easy to integrate with services like Travis CI that use a lot of npm conventions as their default.
+
+
+#### Keeping your Sauce Labs credentials secret
+
+While it's possible to specify your Sauce Labs username and access key in your configuration file or `package.json`, if you want to keep them secret you can assign them to the `SAUCE_USERNAME` and `SAUCE_ACCESS_KEY` environment variables, and the `easy-sauce` CLI will automatically use those values.
 
 ### Node.js API
 
-To use Easy Sauce in Node.js, require the `easy-sauce` function, which can be invoked with an object of configuration options corresponding to the CLI options listed above.
+To use Easy Sauce in Node.js, you can `require('easy-sauce')`, which gives you a function that you invoke with a configuration options object corresponding to the CLI options listed above
 
-The function returns a [readable stream](https://nodejs.org/api/stream.html#stream_class_stream_readable). When invoked from the command line, this stream is piped to `process.stdio`. When invoked fomr Node you can listen for the `data`, `end`, and `error` events to determine the progress of the tests.
+The function returns a [readable stream](https://nodejs.org/api/stream.html#stream_class_stream_readable), which you can `pipe` to other streams (e.g. `process.stdio`) or manually listen to the `data`, `end`, and `error` events to determine the progress of the tests.
 
 ```js
 const easySacue = require('easy-sauce');
@@ -146,20 +165,21 @@ easySauce({
     ]
   }
 })
-.on('data', (message) => {
+.on('data', function(message) {
   // A progress message has been added to the stream.
 })
-.on('error', (err) => {
+.on('error', function(err) {
   // An error occurred at some point running the tests.
 })
-.on('end', () => {
-  // All tests have completed.
+.on('end', function() {
+  // All tests have completed!
+  // The raw test results from Sauce Labs can be found at `this.results`.
 });
 ```
 
 ## Running the tests
 
-If you'd like to contribute to the Easy Sauce library, make sure your change pass the existing test suite. If your changes significantly alter the functionality of the library, make sure to update the tests in the `/test` directory.
+If you'd like to contribute to the Easy Sauce library, make sure your changes pass the existing test suite. If your changes significantly alter the functionality of the library, make sure to update the tests in the `/test` directory.
 
 You can run the tests with the following command:
 
