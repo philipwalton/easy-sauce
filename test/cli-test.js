@@ -275,22 +275,4 @@ describe('cli', () => {
     process.exit.restore();
   });
 
-
-  it('exits with a status code of 0 if no errors occured', (done) => {
-    sinon.stub(process, 'exit');
-
-    cli({});
-
-    let logger = Logger.prototype.pipe.lastCall.thisValue;
-
-    logger.on('end', () => {
-      assert(process.exit.calledOnce);
-      assert(process.exit.calledWith(0));
-      process.exit.restore();
-      done();
-    });
-
-    logger.end();
-  });
-
 });
