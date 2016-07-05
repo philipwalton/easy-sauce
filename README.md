@@ -69,13 +69,6 @@ Options:
                     Defaults to "mocha".
                     See https://goo.gl/5KfjDS for details.
 
-  -v, --verbose     Log additional information to the console, including
-                    all JSON data returned by the Sauce Labs API calls.
-
-  -q, --quiet       Suppresses all non-error message from being logged.
-                    Note: error message are always logged and cause the process
-                    to exit with a status code of 1.
-
   -h, --help        Displays this help message.
 
   -V, --version     Display the easy-sauce version number.
@@ -139,7 +132,34 @@ While it's possible to specify your Sauce Labs username and access key in your c
 
 To use Easy Sauce in Node.js, you can `require('easy-sauce')`, which gives you a function that you invoke with a configuration options object corresponding to the CLI options listed above
 
-The function returns a [readable stream](https://nodejs.org/api/stream.html#stream_class_stream_readable), which you can `pipe` to other streams (e.g. `process.stdio`) or manually listen to the `data`, `end`, and `error` events to determine the progress of the tests.
+The function returns an [EventEmitter](https://nodejs.org/api/events.html#events_class_eventemitter) instance, which emits the following events that you can listen to and determine the progress of the tests.
+
+<table>
+  <tr valign="top">
+    <th align="left">Name</th>
+    <th align="left">Arguments</th>
+    <th align="left">Description</th>
+  </tr>
+  <tr valign="top">
+    <td><code>message</code></td>
+    <td><code>message</code> (string) The message text.</td>
+    <td>A progress message. In the CLI, this mesage is logged to the console.</td>
+  </tr>
+  <tr valign="top">
+    <td><code>done</code></td>
+    <td>
+      <code>passed</code> (boolean) True if all tests passed.<br>
+      <code>jobs</code> (Object) The raw JSON results from Sauce Labs.
+    </td>
+    <td>Emitted when the tests have finished running.</td>
+  </tr>
+  <tr valign="top">
+    <td><code>error</code></td>
+    <td><code>err</code> (Error) The error object thrown.
+    <td>Emitted if an error occured while running the tests.</td>
+  </tr>
+</table>
+
 
 ```js
 const easySacue = require('easy-sauce');
@@ -165,16 +185,23 @@ easySauce({
     ]
   }
 })
-.on('data', function(message) {
+.on('message', function(message) {
   // A progress message has been added to the stream.
+  console.log(message);
 })
+.on('end', function(passed, jobs) {
+  // All tests have completed!
+  if (passed) {
+    console.log('All tests passed!');
+  }
+  else {
+    console.log('Oops, there were failures:\n' + jobs);
+  }
+});
 .on('error', function(err) {
   // An error occurred at some point running the tests.
+  console.error(err.message);
 })
-.on('end', function() {
-  // All tests have completed!
-  // The raw test results from Sauce Labs can be found at `this.results`.
-});
 ```
 
 ## Running the tests

@@ -1,11 +1,11 @@
 const assert = require('assert');
+const EventEmitter = require('events');
 const fs = require('fs-extra');
 const ngrok = require('ngrok');
 const request = require('request');
 const sinon = require('sinon');
 const EasySauce = require('../lib/easy-sauce');
 const messages = require('../lib/messages');
-const Logger = require('../lib/logger');
 
 
 var opts = {
@@ -57,18 +57,6 @@ describe('EasySauce', () => {
       });
     });
 
-
-    it('creates a new logger based on the verbose/quiet options', () => {
-      assert.equal(new EasySauce({}).logger.logLevel,
-                   Logger.logLevel.NORMAL);
-
-      assert.equal(new EasySauce({verbose: true}).logger.logLevel,
-                   Logger.logLevel.VERBOSE);
-
-      assert.equal(new EasySauce({quiet: true}).logger.logLevel,
-                   Logger.logLevel.QUIET);
-    });
-
   });
 
 
@@ -83,9 +71,8 @@ describe('EasySauce', () => {
       let jobsStart = getFixture('jobs-start');
       let jobsFinishPass = getFixture('jobs-finish-pass');
 
-      sinon.stub(Logger.prototype, 'log');
       sinon.stub(request, 'post', (opts, cb) => {
-        setTimeout(() => {
+        process.nextTick(() => {
           switch (request.post.callCount) {
             case 1:
               cb(null, {body: jobsStart}, jobsStart);
@@ -94,31 +81,27 @@ describe('EasySauce', () => {
               cb(null, {body: jobsFinishPass}, jobsFinishPass);
               break;
           }
-        }, 0);
+        });
       });
       sinon.stub(ngrok, 'connect', (port, cb) => {
-        setTimeout(() => cb(null, 'http://xxx.ngrok.com'), 0);
+        process.nextTick(() => cb(null, 'http://xxx.ngrok.com'));
       });
     });
 
     afterEach(() => {
-      Logger.prototype.log.restore();
       request.post.restore();
       ngrok.connect.restore();
     });
 
 
-    it('returns a Logger instance', (done) => {
-      let es = new EasySauce();
+    it('returns an EventEmitter instance', (done) => {
+      let es = new EasySauce(opts);
+      es.POLL_INTERVAL = 0;
+
       let returnValue = es.runTestsAndLogResults();
-      assert(returnValue instanceof Logger);
+      assert(returnValue instanceof EventEmitter);
 
-      // Unhandled errors cause problems, so handler must be registered.
-      returnValue.on('error', (err) => assert(err));
-      returnValue.on('end', done);
-
-      // Puts the stream into flowing mode.
-      returnValue.resume();
+      returnValue.on('done', () => done());
     });
 
   });
@@ -179,9 +162,6 @@ describe('EasySauce', () => {
 
   describe('startServer', () => {
 
-    beforeEach(() => sinon.stub(Logger.prototype, 'log'));
-    afterEach(() => Logger.prototype.log.restore());
-
     it('returns a promise', (done) => {
       let es = new EasySauce(opts);
       let returnValue = es.startServer();
@@ -205,10 +185,14 @@ describe('EasySauce', () => {
 
     it('logs a message upon success', (done) => {
       let es = new EasySauce(opts);
+      sinon.spy(es.logger, 'emit');
+
       es.startServer().then(() => {
-        assert(Logger.prototype.log.calledOnce);
-        assert(Logger.prototype.log.calledWith(
-            messages.SERVER_STARTED + es.opts.port));
+        assert(es.logger.emit.calledOnce);
+        assert(es.logger.emit.calledWith(
+            'message', messages.SERVER_STARTED + es.opts.port));
+
+        es.logger.emit.restore();
         es.server.close();
         done();
       });
@@ -237,17 +221,6 @@ describe('EasySauce', () => {
 
   describe('createTunnel', () => {
 
-    beforeEach(() => {
-      sinon.stub(Logger.prototype, 'log');
-    });
-
-
-    afterEach(() => {
-      ngrok.connect.restore();
-      Logger.prototype.log.restore();
-    });
-
-
     it('returns a promise', () => {
       sinon.stub(ngrok, 'connect', (port, cb) => {
         setTimeout(() => cb(null, 'http://xxx.ngrok.com'), 0);
@@ -256,6 +229,8 @@ describe('EasySauce', () => {
       let es = new EasySauce(opts);
       let returnValue = es.createTunnel();
       assert(returnValue instanceof Promise);
+
+      ngrok.connect.restore();
     });
 
 
@@ -268,22 +243,28 @@ describe('EasySauce', () => {
       es.createTunnel().then(() => {
         assert(es.baseUrl);
         assert(ngrok.connect.calledOnce);
+
+        ngrok.connect.restore();
         done();
       });
     });
 
 
     it('logs a message on success', (done) => {
+      let es = new EasySauce(opts);
+
+      sinon.stub(es.logger, 'emit');
       sinon.stub(ngrok, 'connect', (port, cb) => {
         setTimeout(() => cb(null, 'http://xxx.ngrok.com'), 0);
       });
 
-      let es = new EasySauce(opts);
       es.createTunnel().then(() => {
-        assert(Logger.prototype.log.calledOnce);
-        assert(Logger.prototype.log.calledWith(
-            messages.TUNNEL_CREATED + es.opts.port));
+        assert(es.logger.emit.calledOnce);
+        assert(es.logger.emit.calledWith(
+            'message', messages.TUNNEL_CREATED + es.opts.port));
 
+        es.logger.emit.restore();
+        ngrok.connect.restore();
         done();
       });
     });
@@ -297,6 +278,8 @@ describe('EasySauce', () => {
       let es = new EasySauce(opts);
       es.createTunnel().catch((err) => {
         assert(err);
+
+        ngrok.connect.restore();
         done();
       });
     });
@@ -314,16 +297,6 @@ describe('EasySauce', () => {
     let jobsStart = getFixture('jobs-start');
     let jobsError = getFixture('jobs-error');
 
-    beforeEach(() => {
-      sinon.stub(Logger.prototype, 'log');
-    });
-
-    afterEach(() => {
-      request.post.restore();
-      Logger.prototype.log.restore();
-    });
-
-
     it('returns a promise', (done) => {
       sinon.stub(request, 'post', (opts, cb) => {
         setTimeout(() => {
@@ -334,6 +307,8 @@ describe('EasySauce', () => {
       let es = new EasySauce(opts);
       let returnValue = es.startJobs().then(() => {
         assert(returnValue instanceof Promise);
+
+        request.post.restore();
         done();
       });
     });
@@ -349,25 +324,31 @@ describe('EasySauce', () => {
       let es = new EasySauce(opts);
       es.startJobs().then((jobs) => {
         assert.deepEqual(jobs, jobsStart['js tests']);
+
+        request.post.restore();
         done();
       });
     });
 
 
     it('Logs a message on success', (done) => {
+      let es = new EasySauce(opts);
+
+      sinon.stub(es.logger, 'emit');
       sinon.stub(request, 'post', (opts, cb) => {
         setTimeout(() => {
           cb(null, {body: jobsStart}, jobsStart);
         }, 0);
       });
 
-      let es = new EasySauce(opts);
       es.baseUrl = 'http://xxx.ngrok.com'; // Stubs baseUrl.
       es.startJobs().then(() => {
-        assert(Logger.prototype.log.calledOnce);
-        assert(Logger.prototype.log.calledWith(
+        assert(es.logger.emit.calledOnce);
+        assert(es.logger.emit.calledWith('message',
             messages.JOBS_STARTED + es.baseUrl + es.opts.tests));
 
+        es.logger.emit.restore();
+        request.post.restore();
         done();
       });
     });
@@ -386,6 +367,7 @@ describe('EasySauce', () => {
         assert.equal(err.message,
             messages.JOBS_START_ERROR + '(401) Not authorized');
 
+        request.post.restore();
         done();
       });
     });
@@ -400,6 +382,8 @@ describe('EasySauce', () => {
       es.baseUrl = 'http://xxx.ngrok.com'; // Stubs baseUrl.
       es.startJobs().catch((err) => {
         assert(err instanceof Error);
+
+        request.post.restore();
         done();
       });
     });
@@ -421,15 +405,6 @@ describe('EasySauce', () => {
     let jobsProgressPass3 = getFixture('jobs-progress-pass-3');
     let jobsFinishPass = getFixture('jobs-finish-pass');
 
-    beforeEach(() => {
-      sinon.stub(Logger.prototype, 'log');
-    });
-
-    afterEach(() => {
-      request.post.restore();
-      Logger.prototype.log.restore();
-    });
-
     it('returns a promise', () => {
       sinon.stub(request, 'post', (opts, cb) => {
         setTimeout(() => {
@@ -441,6 +416,8 @@ describe('EasySauce', () => {
       let jobs = jobsStart['js tests'];
       let returnValue = es.waitForJobsToFinish(jobs);
       assert(returnValue instanceof Promise);
+
+      request.post.restore();
     });
 
 
@@ -469,6 +446,8 @@ describe('EasySauce', () => {
       es.POLL_INTERVAL = 0;
       es.waitForJobsToFinish(jobs).then((jobs) => {
         assert.deepEqual(jobs, jobsFinishPass['js tests']);
+
+        request.post.restore();
         done();
       });
 
@@ -476,6 +455,9 @@ describe('EasySauce', () => {
 
 
     it('logs progress to the console', (done) => {
+      let es = new EasySauce(opts);
+
+      sinon.stub(es.logger, 'emit');
       sinon.stub(request, 'post', (opts, cb) => {
         setTimeout(() => {
           switch (request.post.callCount) {
@@ -495,31 +477,29 @@ describe('EasySauce', () => {
         }, 0);
       });
 
-      let es = new EasySauce(opts);
       let jobs = jobsStart['js tests'];
       es.POLL_INTERVAL = 0;
       es.waitForJobsToFinish(jobs).then(() => {
-        assert.equal(Logger.prototype.log.callCount, 8);
-        assert(Logger.prototype.log.getCall(0).calledWith(
+        assert.equal(es.logger.emit.callCount, 8);
+        assert(es.logger.emit.getCall(0).calledWith('message',
             'chrome (latest) on Windows 10 : test session in progress'));
-        assert(Logger.prototype.log.getCall(1).calledWith(
+        assert(es.logger.emit.getCall(1).calledWith('message',
             'firefox (latest) on Linux : test queued'));
-        assert(Logger.prototype.log.getCall(2).calledWith(
+        assert(es.logger.emit.getCall(2).calledWith('message',
             'safari (9) on OS X 10.11 : test queued'));
-        assert(Logger.prototype.log.getCall(3).calledWith(
+        assert(es.logger.emit.getCall(3).calledWith('message',
             'firefox (latest) on Linux : test session in progress'));
-        assert(Logger.prototype.log.getCall(4).calledWith(
-            'chrome (latest) on Windows 10 : test finished ' +
-            '30 tests, 29 passes, 0 failures'));
-        assert(Logger.prototype.log.getCall(5).calledWith(
-            'firefox (latest) on Linux : test finished ' +
-            '30 tests, 29 passes, 0 failures'));
-        assert(Logger.prototype.log.getCall(6).calledWith(
+        assert(es.logger.emit.getCall(4).calledWith('message',
+            'chrome (latest) on Windows 10 : test finished'));
+        assert(es.logger.emit.getCall(5).calledWith('message',
+            'firefox (latest) on Linux : test finished'));
+        assert(es.logger.emit.getCall(6).calledWith('message',
             'safari (9) on OS X 10.11 : test session in progress'));
-        assert(Logger.prototype.log.getCall(7).calledWith(
-            'safari (9) on OS X 10.11 : test finished ' +
-            '30 tests, 29 passes, 0 failures'));
+        assert(es.logger.emit.getCall(7).calledWith('message',
+            'safari (9) on OS X 10.11 : test finished'));
 
+        es.logger.emit.restore();
+        request.post.restore();
         done();
       });
 
@@ -539,6 +519,7 @@ describe('EasySauce', () => {
         assert.equal(err.message,
             messages.JOBS_PROGRESS_ERROR + '(401) Not authorized');
 
+        request.post.restore();
         done();
       });
     });
@@ -554,6 +535,8 @@ describe('EasySauce', () => {
       es.POLL_INTERVAL = 0;
       es.waitForJobsToFinish(jobs).catch((err) => {
         assert(err instanceof Error);
+
+        request.post.restore();
         done();
       });
     });
@@ -568,54 +551,31 @@ describe('EasySauce', () => {
 
   describe('reportResults', () => {
 
-    it('logs passed test results', () => {
-      sinon.stub(Logger.prototype, 'log');
-
+    it('reports passed test results', () => {
       let es = new EasySauce(opts);
       let jobs = getFixture('jobs-finish-pass')['js tests'];
 
+      sinon.stub(es.logger, 'emit');
+
       es.reportResults(jobs);
-      assert.equal(Logger.prototype.log.callCount, 1);
-      assert(Logger.prototype.log.calledWith('All tests pass!'));
+      assert.equal(es.logger.emit.callCount, 1);
+      assert(es.logger.emit.calledWith('done', true, jobs));
 
-      Logger.prototype.log.restore();
+      es.logger.emit.restore();
     });
 
 
-    it('stores the results on the logger', () => {
-      sinon.stub(Logger.prototype, 'log');
-      sinon.spy(EasySauce.prototype, 'reportResults');
-
-      let es = new EasySauce(opts);
-      let jobsPass = getFixture('jobs-finish-pass')['js tests'];
-      let jobsFail = getFixture('jobs-finish-fail')['js tests'];
-
-      es.reportResults(jobsPass);
-      assert.equal(EasySauce.prototype.reportResults.callCount, 1);
-
-      let passCall = EasySauce.prototype.reportResults.lastCall;
-      assert.equal(passCall.thisValue.logger.results, jobsPass);
-
-      assert.throws(() => {
-        es.reportResults(jobsFail);
-        assert.equal(EasySauce.prototype.reportResults.callCount, 2);
-
-        let failCall = EasySauce.prototype.reportResults.lastCall;
-        assert.equal(failCall.thisValue.logger.results, jobsFail);
-      });
-
-      Logger.prototype.log.restore();
-      EasySauce.prototype.reportResults.restore();
-    });
-
-
-    it('throws with failed test results', () => {
+    it('reports failed test results', () => {
       let es = new EasySauce(opts);
       let jobs = getFixture('jobs-finish-fail')['js tests'];
 
-      assert.throws(() => {
-        es.reportResults(jobs);
-      }, /failures/);
+      sinon.stub(es.logger, 'emit');
+
+      es.reportResults(jobs);
+      assert.equal(es.logger.emit.callCount, 1);
+      assert(es.logger.emit.calledWith('done', false, jobs));
+
+      es.logger.emit.restore();
     });
 
   });

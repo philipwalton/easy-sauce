@@ -1,36 +1,33 @@
 const assert = require('assert');
+const EventEmitter = require('events');
 const fs = require('fs-extra');
 const path = require('path');
 const sinon = require('sinon');
 const cli = require('../lib/cli');
 const EasySauce = require('../lib/easy-sauce');
-const Logger = require('../lib/logger');
 const pkg = require('../package.json');
 
 
 describe('cli', () => {
 
   beforeEach(() => {
-    // Stubs pipe to call resume to put the stream into flowing mode.
-    sinon.stub(Logger.prototype, 'pipe', Logger.prototype.resume);
     sinon.stub(EasySauce.prototype, 'runTestsAndLogResults')
-        .returns(new Logger());
+        .returns(new EventEmitter());
   });
 
 
   afterEach(() => {
-    Logger.prototype.pipe.restore();
     EasySauce.prototype.runTestsAndLogResults.restore();
   });
 
 
   it('shows the usage info given the -h or --help options', (done) => {
-    sinon.stub(process.stdout, 'write', () => {
-      assert(process.stdout.write.lastCall.calledWith(sinon.match(
+    sinon.stub(process.stderr, 'write', () => {
+      assert(process.stderr.write.lastCall.calledWith(sinon.match(
           (value) => value.toString().includes('Usage: easy-sauce'))));
 
-      if (process.stdout.write.callCount == 2) {
-        process.stdout.write.restore();
+      if (process.stderr.write.callCount == 2) {
+        process.stderr.write.restore();
         done();
       }
     });
@@ -41,12 +38,12 @@ describe('cli', () => {
 
 
   it('shows the version given the -V or --version options', (done) => {
-    sinon.stub(process.stdout, 'write', () => {
-      assert(process.stdout.write.lastCall.calledWith(sinon.match(
+    sinon.stub(process.stderr, 'write', () => {
+      assert(process.stderr.write.lastCall.calledWith(sinon.match(
           (value) => value.toString().includes(pkg.version))));
 
-      if (process.stdout.write.callCount == 2) {
-        process.stdout.write.restore();
+      if (process.stderr.write.callCount == 2) {
+        process.stderr.write.restore();
         done();
       }
     });
@@ -65,7 +62,6 @@ describe('cli', () => {
     let stub = EasySauce.prototype.runTestsAndLogResults;
 
     assert(stub.calledTwice);
-    assert(Logger.prototype.pipe.calledTwice);
 
     let firstThisValue = stub.firstCall.thisValue;
     let secondThisValue = stub.secondCall.thisValue;
@@ -90,9 +86,6 @@ describe('cli', () => {
     cli({});
 
     let stub = EasySauce.prototype.runTestsAndLogResults;
-
-    assert(stub.calledOnce);
-    assert(Logger.prototype.pipe.calledOnce);
 
     assert(stub.calledOnce);
 
@@ -167,9 +160,7 @@ describe('cli', () => {
       p: 1979,
       b: '1',
       n: 'Unit Tests',
-      f: 'custom',
-      v: true,
-      q: true
+      f: 'custom'
     });
 
     let stub = EasySauce.prototype.runTestsAndLogResults;
@@ -184,8 +175,6 @@ describe('cli', () => {
     assert.equal(stub.lastCall.thisValue.opts.build, '1');
     assert.equal(stub.lastCall.thisValue.opts.name, 'Unit Tests');
     assert.equal(stub.lastCall.thisValue.opts.framework, 'custom');
-    assert.equal(stub.lastCall.thisValue.opts.verbose, true);
-    assert.equal(stub.lastCall.thisValue.opts.quiet, true);
   });
 
 
@@ -199,9 +188,7 @@ describe('cli', () => {
       port: 1979,
       build: '1',
       name: 'Unit Tests',
-      framework: 'custom',
-      verbose: true,
-      quiet: true
+      framework: 'custom'
     });
 
     let stub = EasySauce.prototype.runTestsAndLogResults;
@@ -216,8 +203,6 @@ describe('cli', () => {
     assert.equal(stub.lastCall.thisValue.opts.build, '1');
     assert.equal(stub.lastCall.thisValue.opts.name, 'Unit Tests');
     assert.equal(stub.lastCall.thisValue.opts.framework, 'custom');
-    assert.equal(stub.lastCall.thisValue.opts.verbose, true);
-    assert.equal(stub.lastCall.thisValue.opts.quiet, true);
   });
 
 
@@ -262,9 +247,11 @@ describe('cli', () => {
   it('exits with a status code of 1 if an error occurred', () => {
     sinon.stub(process.stderr, 'write');
     sinon.stub(process, 'exit');
+    sinon.spy(EventEmitter.prototype, 'on');
 
     cli({});
-    Logger.prototype.pipe.lastCall.thisValue.emit('error', new Error('fail'));
+    EventEmitter.prototype.on.lastCall.thisValue
+        .emit('error', new Error('fail'));
 
     assert(process.stderr.write.calledOnce);
     assert(process.stderr.write.calledWith(sinon.match('fail')));
@@ -273,6 +260,7 @@ describe('cli', () => {
 
     process.stderr.write.restore();
     process.exit.restore();
+    EventEmitter.prototype.on.restore();
   });
 
 });

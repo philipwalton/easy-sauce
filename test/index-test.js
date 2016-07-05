@@ -1,8 +1,8 @@
 const assert = require('assert');
+const EventEmitter = require('events');
 const sinon = require('sinon');
 const easySauce = require('../');
 const EasySauce = require('../lib/easy-sauce');
-const Logger = require('../lib/logger');
 
 
 let opts = {
@@ -20,7 +20,7 @@ describe('index', () => {
 
   it('creates an EasySauce instance and starts running the tests', () => {
     sinon.stub(EasySauce.prototype, 'runTestsAndLogResults')
-        .returns(new Logger());
+        .returns(new EventEmitter());
 
     easySauce(opts);
     assert(EasySauce.prototype.runTestsAndLogResults.calledOnce);
@@ -32,7 +32,7 @@ describe('index', () => {
   });
 
 
-  it('returns a Logger instance', () => {
+  it('returns a EventEmitter instance', () => {
     let promise = Promise.resolve.bind(Promise);
     sinon.stub(EasySauce.prototype, 'validateInput').returns(promise());
     sinon.stub(EasySauce.prototype, 'startServer').returns(promise());
@@ -42,7 +42,7 @@ describe('index', () => {
     sinon.stub(EasySauce.prototype, 'reportResults').returns(promise());
 
     let returnValue = easySauce(opts);
-    assert(returnValue instanceof Logger);
+    assert(returnValue instanceof EventEmitter);
 
     EasySauce.prototype.validateInput.restore();
     EasySauce.prototype.startServer.restore();

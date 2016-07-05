@@ -39,13 +39,6 @@ Options:
                     Defaults to "mocha".
                     See https://goo.gl/5KfjDS for details.
 
-  -v, --verbose     Log additional information to the console, including
-                    all JSON data returned by the Sauce Labs API calls.
-
-  -q, --quiet       Suppresses all non-error message from being logged.
-                    Note: error message are always logged and cause the process
-                    to exit with a status code of 1.
-
   -h, --help        Displays this help message.
 
   -V, --version     Display the easy-sauce version number.
