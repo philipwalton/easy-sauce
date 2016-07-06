@@ -223,7 +223,7 @@ describe('EasySauce', () => {
 
     it('returns a promise', () => {
       sinon.stub(ngrok, 'connect', (port, cb) => {
-        setTimeout(() => cb(null, 'http://xxx.ngrok.com'), 0);
+        process.nextTick(() => cb(null, 'http://xxx.ngrok.com'));
       });
 
       let es = new EasySauce(opts);
@@ -236,7 +236,7 @@ describe('EasySauce', () => {
 
     it('resolves once the ngrok tunnel is created', (done) => {
       sinon.stub(ngrok, 'connect', (port, cb) => {
-        setTimeout(() => cb(null, 'http://xxx.ngrok.com'), 0);
+        process.nextTick(() => cb(null, 'http://xxx.ngrok.com'));
       });
 
       let es = new EasySauce(opts);
@@ -256,7 +256,7 @@ describe('EasySauce', () => {
 
       sinon.stub(es.logger, 'emit');
       sinon.stub(ngrok, 'connect', (port, cb) => {
-        setTimeout(() => cb(null, baseUrl), 0);
+        process.nextTick(() => cb(null, baseUrl));
       });
 
       es.createTunnel().then(() => {
@@ -273,7 +273,7 @@ describe('EasySauce', () => {
 
     it('rejects if there is an error creating the tunnel', (done) => {
       sinon.stub(ngrok, 'connect', (port, cb) => {
-        setTimeout(() => cb(new Error()), 0);
+        process.nextTick(() => cb(new Error()));
       });
 
       let es = new EasySauce(opts);
@@ -298,18 +298,18 @@ describe('EasySauce', () => {
     let jobsStart = getFixture('jobs-start');
     let jobsError = getFixture('jobs-error');
 
+    afterEach(() => request.post.restore());
+
     it('returns a promise', (done) => {
       sinon.stub(request, 'post', (opts, cb) => {
-        setTimeout(() => {
+        process.nextTick(() => {
           cb(null, {body: jobsStart}, jobsStart);
-        }, 0);
+        });
       });
 
       let es = new EasySauce(opts);
       let returnValue = es.startJobs().then(() => {
         assert(returnValue instanceof Promise);
-
-        request.post.restore();
         done();
       });
     });
@@ -317,16 +317,14 @@ describe('EasySauce', () => {
 
     it('resolves with the result of the API call', (done) => {
       sinon.stub(request, 'post', (opts, cb) => {
-        setTimeout(() => {
+        process.nextTick(() => {
           cb(null, {body: jobsStart}, jobsStart);
-        }, 0);
+        });
       });
 
       let es = new EasySauce(opts);
       es.startJobs().then((jobs) => {
         assert.deepEqual(jobs, jobsStart['js tests']);
-
-        request.post.restore();
         done();
       });
     });
@@ -347,7 +345,6 @@ describe('EasySauce', () => {
             messages('JOBS_STARTED', es.baseUrl + es.opts.tests)));
 
         es.logger.emit.restore();
-        request.post.restore();
         done();
       });
     });
@@ -363,8 +360,6 @@ describe('EasySauce', () => {
       es.startJobs().catch((err) => {
         assert.equal(err.message,
             messages('JOBS_START_ERROR', '(401) Not authorized'));
-
-        request.post.restore();
         done();
       });
     });
@@ -372,15 +367,13 @@ describe('EasySauce', () => {
 
     it('rejects if there is an error making the request', (done) => {
       sinon.stub(request, 'post', (opts, cb) => {
-        setTimeout(() => cb(new Error()));
+        process.nextTick(() => cb(new Error()));
       });
 
       let es = new EasySauce(opts);
       es.baseUrl = 'http://xxx.ngrok.com'; // Stubs baseUrl.
       es.startJobs().catch((err) => {
         assert(err instanceof Error);
-
-        request.post.restore();
         done();
       });
     });
@@ -397,30 +390,39 @@ describe('EasySauce', () => {
 
     let jobsStart = getFixture('jobs-start');
     let jobsError = getFixture('jobs-error');
+
     let jobsProgressPass1 = getFixture('jobs-progress-pass-1');
     let jobsProgressPass2 = getFixture('jobs-progress-pass-2');
     let jobsProgressPass3 = getFixture('jobs-progress-pass-3');
     let jobsFinishPass = getFixture('jobs-finish-pass');
 
+    let jobsProgressFail1 = getFixture('jobs-progress-fail-1');
+    let jobsProgressFail2 = getFixture('jobs-progress-fail-2');
+    let jobsProgressFail3 = getFixture('jobs-progress-fail-3');
+    let jobsFinishFail = getFixture('jobs-finish-fail');
+
+    let jobsProgressCancelled1 = getFixture('jobs-progress-cancelled-1');
+    let jobsFinishCancelled = getFixture('jobs-finish-cancelled');
+
+    afterEach(() => request.post.restore());
+
     it('returns a promise', () => {
       sinon.stub(request, 'post', (opts, cb) => {
-        setTimeout(() => {
+        process.nextTick(() => {
           cb(null, {body: jobsFinishPass}, jobsFinishPass);
-        }, 0);
+        });
       });
 
       let es = new EasySauce(opts);
       let jobs = jobsStart['js tests'];
       let returnValue = es.waitForJobsToFinish(jobs);
       assert(returnValue instanceof Promise);
-
-      request.post.restore();
     });
 
 
-    it('resolves with the results when all tests have completed', (done) => {
+    it('resolves with the results when all tests have passed', (done) => {
       sinon.stub(request, 'post', (opts, cb) => {
-        setTimeout(() => {
+        process.nextTick(() => {
           switch (request.post.callCount) {
             case 1:
               cb(null, {body: jobsProgressPass1}, jobsProgressPass1);
@@ -431,11 +433,11 @@ describe('EasySauce', () => {
             case 3:
               cb(null, {body: jobsProgressPass3}, jobsProgressPass3);
               break;
-            case 4:
+            default:
               cb(null, {body: jobsFinishPass}, jobsFinishPass);
               break;
           }
-        }, 0);
+        });
       });
 
       let es = new EasySauce(opts);
@@ -443,8 +445,62 @@ describe('EasySauce', () => {
       es.POLL_INTERVAL = 0;
       es.waitForJobsToFinish(jobs).then((jobs) => {
         assert.deepEqual(jobs, jobsFinishPass['js tests']);
+        done();
+      });
 
-        request.post.restore();
+    });
+
+
+    it('resolves with the results when some tests have failed', (done) => {
+      sinon.stub(request, 'post', (opts, cb) => {
+        process.nextTick(() => {
+          switch (request.post.callCount) {
+            case 1:
+              cb(null, {body: jobsProgressFail1}, jobsProgressFail1);
+              break;
+            case 2:
+              cb(null, {body: jobsProgressFail2}, jobsProgressFail2);
+              break;
+            case 3:
+              cb(null, {body: jobsProgressFail3}, jobsProgressFail3);
+              break;
+            default:
+              cb(null, {body: jobsFinishFail}, jobsFinishFail);
+              break;
+          }
+        });
+      });
+
+      let es = new EasySauce(opts);
+      let jobs = jobsStart['js tests'];
+      es.POLL_INTERVAL = 0;
+      es.waitForJobsToFinish(jobs).then((jobs) => {
+        assert.deepEqual(jobs, jobsFinishFail['js tests']);
+        done();
+      });
+
+    });
+
+
+    it('resolves with empty results when tests were cancelled', (done) => {
+      sinon.stub(request, 'post', (opts, cb) => {
+        process.nextTick(() => {
+          switch (request.post.callCount) {
+            case 1:
+              cb(null, {body: jobsProgressCancelled1}, jobsProgressCancelled1);
+              break;
+            default:
+              cb(null, {body: jobsFinishCancelled}, jobsFinishCancelled);
+              break;
+          }
+        });
+      });
+
+      let es = new EasySauce(opts);
+      let jobs = jobsStart['js tests'];
+      es.POLL_INTERVAL = 0;
+      es.waitForJobsToFinish(jobs).then((jobs) => {
+        assert.deepEqual(jobs, jobsFinishCancelled['js tests']);
         done();
       });
 
@@ -456,7 +512,7 @@ describe('EasySauce', () => {
 
       sinon.stub(es.logger, 'emit');
       sinon.stub(request, 'post', (opts, cb) => {
-        setTimeout(() => {
+        process.nextTick(() => {
           switch (request.post.callCount) {
             case 1:
               cb(null, {body: jobsProgressPass1}, jobsProgressPass1);
@@ -467,11 +523,11 @@ describe('EasySauce', () => {
             case 3:
               cb(null, {body: jobsProgressPass3}, jobsProgressPass3);
               break;
-            case 4:
+            default:
               cb(null, {body: jobsFinishPass}, jobsFinishPass);
               break;
           }
-        }, 0);
+        });
       });
 
       let jobs = jobsStart['js tests'];
@@ -496,7 +552,6 @@ describe('EasySauce', () => {
             'safari (9) on OS X 10.11: test finished'));
 
         es.logger.emit.restore();
-        request.post.restore();
         done();
       });
 
@@ -505,9 +560,9 @@ describe('EasySauce', () => {
 
     it('rejects if the API returns an error', (done) => {
       sinon.stub(request, 'post', (opts, cb) => {
-        setTimeout(() => {
+        process.nextTick(() => {
           cb(null, {statusCode: 401}, jobsError);
-        }, 0);
+        });
       });
 
       let es = new EasySauce(opts);
@@ -516,8 +571,6 @@ describe('EasySauce', () => {
       es.waitForJobsToFinish(jobs).catch((err) => {
         assert.equal(err.message,
             messages('JOBS_PROGRESS_ERROR', '(401) Not authorized'));
-
-        request.post.restore();
         done();
       });
     });
@@ -525,7 +578,7 @@ describe('EasySauce', () => {
 
     it('rejects if there is an error making the request', (done) => {
       sinon.stub(request, 'post', (opts, cb) => {
-        setTimeout(() => cb(new Error()));
+        process.nextTick(() => cb(new Error()));
       });
 
       let es = new EasySauce(opts);
@@ -533,8 +586,6 @@ describe('EasySauce', () => {
       es.POLL_INTERVAL = 0;
       es.waitForJobsToFinish(jobs).catch((err) => {
         assert(err instanceof Error);
-
-        request.post.restore();
         done();
       });
     });
