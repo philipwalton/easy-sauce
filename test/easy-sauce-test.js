@@ -132,7 +132,7 @@ describe('EasySauce', () => {
     it('rejects if no platforms option is passed', (done) => {
       let es = new EasySauce();
       es.validateInput().catch((err) => {
-        assert.equal(err.message, messages.BROWSERS_REQUIRED);
+        assert.equal(err.message, messages('BROWSERS_REQUIRED'));
         done();
       });
     });
@@ -147,7 +147,7 @@ describe('EasySauce', () => {
         ]
       });
       es.validateInput().catch((err) => {
-        assert.equal(err.message, messages.CREDENTIALS_REQUIRED);
+        assert.equal(err.message, messages('CREDENTIALS_REQUIRED'));
         done();
       });
     });
@@ -190,7 +190,7 @@ describe('EasySauce', () => {
       es.startServer().then(() => {
         assert(es.logger.emit.calledOnce);
         assert(es.logger.emit.calledWith(
-            'message', messages.SERVER_STARTED + es.opts.port));
+            'message', messages('SERVER_STARTED', es.opts.port)));
 
         es.logger.emit.restore();
         es.server.close();
@@ -252,16 +252,17 @@ describe('EasySauce', () => {
 
     it('logs a message on success', (done) => {
       let es = new EasySauce(opts);
+      let baseUrl = 'http://xxx.ngrok.com';
 
       sinon.stub(es.logger, 'emit');
       sinon.stub(ngrok, 'connect', (port, cb) => {
-        setTimeout(() => cb(null, 'http://xxx.ngrok.com'), 0);
+        setTimeout(() => cb(null, baseUrl), 0);
       });
 
       es.createTunnel().then(() => {
         assert(es.logger.emit.calledOnce);
         assert(es.logger.emit.calledWith(
-            'message', messages.TUNNEL_CREATED + es.opts.port));
+            'message', messages('TUNNEL_CREATED', es.opts.port, baseUrl)));
 
         es.logger.emit.restore();
         ngrok.connect.restore();
@@ -336,16 +337,14 @@ describe('EasySauce', () => {
 
       sinon.stub(es.logger, 'emit');
       sinon.stub(request, 'post', (opts, cb) => {
-        setTimeout(() => {
-          cb(null, {body: jobsStart}, jobsStart);
-        }, 0);
+        process.nextTick(() => cb(null, {body: jobsStart}, jobsStart));
       });
 
       es.baseUrl = 'http://xxx.ngrok.com'; // Stubs baseUrl.
       es.startJobs().then(() => {
         assert(es.logger.emit.calledOnce);
         assert(es.logger.emit.calledWith('message',
-            messages.JOBS_STARTED + es.baseUrl + es.opts.tests));
+            messages('JOBS_STARTED', es.baseUrl + es.opts.tests)));
 
         es.logger.emit.restore();
         request.post.restore();
@@ -356,16 +355,14 @@ describe('EasySauce', () => {
 
     it('rejects if the API returns an error', (done) => {
       sinon.stub(request, 'post', (opts, cb) => {
-        setTimeout(() => {
-          cb(null, {statusCode: 401}, jobsError);
-        }, 0);
+        process.nextTick(() => cb(null, {statusCode: 401}, jobsError));
       });
 
       let es = new EasySauce(opts);
       es.baseUrl = 'http://xxx.ngrok.com'; // Stubs baseUrl.
       es.startJobs().catch((err) => {
         assert.equal(err.message,
-            messages.JOBS_START_ERROR + '(401) Not authorized');
+            messages('JOBS_START_ERROR', '(401) Not authorized'));
 
         request.post.restore();
         done();
@@ -482,21 +479,21 @@ describe('EasySauce', () => {
       es.waitForJobsToFinish(jobs).then(() => {
         assert.equal(es.logger.emit.callCount, 8);
         assert(es.logger.emit.getCall(0).calledWith('message',
-            'chrome (latest) on Windows 10 : test session in progress'));
+            'chrome (latest) on Windows 10: test session in progress'));
         assert(es.logger.emit.getCall(1).calledWith('message',
-            'firefox (latest) on Linux : test queued'));
+            'firefox (latest) on Linux: test queued'));
         assert(es.logger.emit.getCall(2).calledWith('message',
-            'safari (9) on OS X 10.11 : test queued'));
+            'safari (9) on OS X 10.11: test queued'));
         assert(es.logger.emit.getCall(3).calledWith('message',
-            'firefox (latest) on Linux : test session in progress'));
+            'firefox (latest) on Linux: test session in progress'));
         assert(es.logger.emit.getCall(4).calledWith('message',
-            'chrome (latest) on Windows 10 : test finished'));
+            'chrome (latest) on Windows 10: test finished'));
         assert(es.logger.emit.getCall(5).calledWith('message',
-            'firefox (latest) on Linux : test finished'));
+            'firefox (latest) on Linux: test finished'));
         assert(es.logger.emit.getCall(6).calledWith('message',
-            'safari (9) on OS X 10.11 : test session in progress'));
+            'safari (9) on OS X 10.11: test session in progress'));
         assert(es.logger.emit.getCall(7).calledWith('message',
-            'safari (9) on OS X 10.11 : test finished'));
+            'safari (9) on OS X 10.11: test finished'));
 
         es.logger.emit.restore();
         request.post.restore();
@@ -504,6 +501,7 @@ describe('EasySauce', () => {
       });
 
     });
+
 
     it('rejects if the API returns an error', (done) => {
       sinon.stub(request, 'post', (opts, cb) => {
@@ -517,7 +515,7 @@ describe('EasySauce', () => {
       es.POLL_INTERVAL = 0;
       es.waitForJobsToFinish(jobs).catch((err) => {
         assert.equal(err.message,
-            messages.JOBS_PROGRESS_ERROR + '(401) Not authorized');
+            messages('JOBS_PROGRESS_ERROR', '(401) Not authorized'));
 
         request.post.restore();
         done();

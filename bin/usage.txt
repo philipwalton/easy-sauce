@@ -1,4 +1,3 @@
-
 Usage: easy-sauce [options]
 
 The easy-sauce command can by run by invoking the easy-sauce binary and passing
