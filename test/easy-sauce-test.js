@@ -507,7 +507,7 @@ describe('EasySauce', () => {
     });
 
 
-    it('logs progress to the console', (done) => {
+    it('emits update events', (done) => {
       let es = new EasySauce(opts);
 
       sinon.stub(es.logger, 'emit');
@@ -534,22 +534,38 @@ describe('EasySauce', () => {
       es.POLL_INTERVAL = 0;
       es.waitForJobsToFinish(jobs).then(() => {
         assert.equal(es.logger.emit.callCount, 8);
-        assert(es.logger.emit.getCall(0).calledWith('message',
-            'chrome (latest) on Windows 10: test session in progress'));
-        assert(es.logger.emit.getCall(1).calledWith('message',
-            'firefox (latest) on Linux: test queued'));
-        assert(es.logger.emit.getCall(2).calledWith('message',
-            'safari (9) on OS X 10.11: test queued'));
-        assert(es.logger.emit.getCall(3).calledWith('message',
-            'firefox (latest) on Linux: test session in progress'));
-        assert(es.logger.emit.getCall(4).calledWith('message',
-            'chrome (latest) on Windows 10: test finished'));
-        assert(es.logger.emit.getCall(5).calledWith('message',
-            'firefox (latest) on Linux: test finished'));
-        assert(es.logger.emit.getCall(6).calledWith('message',
-            'safari (9) on OS X 10.11: test session in progress'));
-        assert(es.logger.emit.getCall(7).calledWith('message',
-            'safari (9) on OS X 10.11: test finished'));
+        assert(es.logger.emit.getCall(0).calledWith('update', sinon.match({
+          status: 'test session in progress',
+          platform: ['Windows 10', 'chrome', 'latest']
+        })));
+        assert(es.logger.emit.getCall(1).calledWith('update', sinon.match({
+          status: 'test queued',
+          platform: ['Linux', 'firefox', 'latest']
+        })));
+        assert(es.logger.emit.getCall(2).calledWith('update', sinon.match({
+          status: 'test queued',
+          platform: ['OS X 10.11', 'safari', '9']
+        })));
+        assert(es.logger.emit.getCall(3).calledWith('update', sinon.match({
+          status: 'test session in progress',
+          platform: ['Linux', 'firefox', 'latest']
+        })));
+        assert(es.logger.emit.getCall(4).calledWith('update', sinon.match({
+          status: 'test finished',
+          platform: ['Windows 10', 'chrome', 'latest']
+        })));
+        assert(es.logger.emit.getCall(5).calledWith('update', sinon.match({
+          status: 'test finished',
+          platform: ['Linux', 'firefox', 'latest']
+        })));
+        assert(es.logger.emit.getCall(6).calledWith('update', sinon.match({
+          status: 'test session in progress',
+          platform: ['OS X 10.11', 'safari', '9']
+        })));
+        assert(es.logger.emit.getCall(7).calledWith('update', sinon.match({
+          status: 'test finished',
+          platform: ['OS X 10.11', 'safari', '9']
+        })));
 
         es.logger.emit.restore();
         done();
