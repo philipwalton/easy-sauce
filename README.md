@@ -160,6 +160,7 @@ The function returns an [EventEmitter](https://nodejs.org/api/events.html#events
   </tr>
 </table>
 
+Example Node.js usage:
 
 ```js
 const easySacue = require('easy-sauce');
@@ -197,11 +198,11 @@ easySauce({
   else {
     console.log('Oops, there were failures:\n' + jobs);
   }
-});
+})
 .on('error', function(err) {
   // An error occurred at some point running the tests.
   console.error(err.message);
-})
+});
 ```
 
 ## Running the tests
