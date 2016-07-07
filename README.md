@@ -143,7 +143,7 @@ The function returns an [EventEmitter](https://nodejs.org/api/events.html#events
   <tr valign="top">
     <td><code>update</code></td>
     <td><code>job</code> (Object) The updated JSON job data from Sauce Labs.</td>
-    <td>Emitted when the status of a [job](https://wiki.saucelabs.com/display/DOCS/JavaScript+Unit+Testing+Methods) has changed.</td>
+    <td>Emitted when the status of a <a href="https://wiki.saucelabs.com/display/DOCS/JavaScript+Unit+Testing+Methods">job</a> has changed.</td>
   </tr>
   <tr valign="top">
     <td><code>done</code></td>
@@ -151,7 +151,7 @@ The function returns an [EventEmitter](https://nodejs.org/api/events.html#events
       <code>passed</code> (boolean) True if all tests passed.<br>
       <code>jobs</code> (Object) The final JSON jobs data from Sauce Labs.
     </td>
-    <td>Emitted when all test [jobs](https://wiki.saucelabs.com/display/DOCS/JavaScript+Unit+Testing+Methods) have finished running.</td>
+    <td>Emitted when all test <a href="https://wiki.saucelabs.com/display/DOCS/JavaScript+Unit+Testing+Methods">jobs</a> have finished running.</td>
   </tr>
   <tr valign="top">
     <td><code>error</code></td>
