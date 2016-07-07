@@ -92,7 +92,7 @@ If you're testing an npm package, you can skip the external configuration file a
   },
   // ...
   "easySauce": {
-    "path": "/tests/suite.html",
+    "tests": "/tests/all-tests.html",
     "port": "8080",
     "platforms": [
       [
@@ -141,17 +141,17 @@ The function returns an [EventEmitter](https://nodejs.org/api/events.html#events
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
-    <td><code>message</code></td>
-    <td><code>message</code> (string) The message text.</td>
-    <td>A progress message. In the CLI, this mesage is logged to the console.</td>
+    <td><code>update</code></td>
+    <td><code>job</code> (Object) The updated JSON job data from Sauce Labs.</td>
+    <td>Emitted when the status of a [job](https://wiki.saucelabs.com/display/DOCS/JavaScript+Unit+Testing+Methods) has changed.</td>
   </tr>
   <tr valign="top">
     <td><code>done</code></td>
     <td>
       <code>passed</code> (boolean) True if all tests passed.<br>
-      <code>jobs</code> (Object) The raw JSON results from Sauce Labs.
+      <code>jobs</code> (Object) The final JSON jobs data from Sauce Labs.
     </td>
-    <td>Emitted when the tests have finished running.</td>
+    <td>Emitted when all test [jobs](https://wiki.saucelabs.com/display/DOCS/JavaScript+Unit+Testing+Methods) have finished running.</td>
   </tr>
   <tr valign="top">
     <td><code>error</code></td>
@@ -185,9 +185,9 @@ easySauce({
     ]
   }
 })
-.on('message', function(message) {
-  // A progress message has been added to the stream.
-  console.log(message);
+.on('update', function(job) {
+  // A job's status has been updated
+  console.log(job.status);
 })
 .on('end', function(passed, jobs) {
   // All tests have completed!
