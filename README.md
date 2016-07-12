@@ -110,7 +110,7 @@ If you're testing an npm package, you can skip the external configuration file a
         "safari",
         "9"
       ]
-    }
+    ]
   }
 }
 ```
