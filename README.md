@@ -141,6 +141,11 @@ The function returns an [EventEmitter](https://nodejs.org/api/events.html#events
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
+    <td><code>message</code></td>
+    <td><code>message</code> (string) The message text.</td>
+    <td>Emitted when an event has occurred that may be useful for the user to know (e.g. the public URL of the tests after an ngrok tunnel has been created).</td>
+  </tr>
+  <tr valign="top">
     <td><code>update</code></td>
     <td><code>job</code> (Object) The updated JSON job data from Sauce Labs.</td>
     <td>Emitted when the status of a <a href="https://wiki.saucelabs.com/display/DOCS/JavaScript+Unit+Testing+Methods">job</a> has changed.</td>
@@ -185,6 +190,10 @@ easySauce({
       '9'
     ]
   }
+})
+.on('message', function(message) {
+  // A message has been emitted, inform the user.
+  console.log(message);
 })
 .on('update', function(job) {
   // A job's status has been updated
