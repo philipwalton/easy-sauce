@@ -17,8 +17,9 @@ Easy Sauce can be installed from npm by running the following command:
 
 ```sh
 npm install easy-sauce
-
 ```
+
+**Note:** running `easy-sauce` requires at least Node.js version 6 (due to its use of es2015 code).
 
 ## Usage
 
