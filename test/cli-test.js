@@ -251,10 +251,36 @@ describe('cli', () => {
 
     cli({});
     EventEmitter.prototype.on.lastCall.thisValue
-        .emit('error', new Error('fail'));
+        .emit('error', new Error('error'));
 
     assert(process.stderr.write.calledOnce);
-    assert(process.stderr.write.calledWith(sinon.match('fail')));
+    assert(process.stderr.write.calledWith(sinon.match('error')));
+    assert(process.exit.calledOnce);
+    assert(process.exit.calledWith(1));
+
+    process.stderr.write.restore();
+    process.exit.restore();
+    EventEmitter.prototype.on.restore();
+  });
+
+
+  it('exits with a status code of 1 if a test fails', () => {
+    sinon.stub(process.stderr, 'write');
+    sinon.stub(process, 'exit');
+    sinon.spy(EventEmitter.prototype, 'on');
+
+    let failResponse = fs.readJsonSync('./test/fixtures/jobs-finish-fail.json');
+    let jobs = failResponse['js tests'];
+
+    cli({
+      username: 'me',
+      key: 'secret',
+      platforms: '[["Windows 10", "chrome", "latest"]]'
+    });
+    EventEmitter.prototype.on.lastCall.thisValue
+        .emit('done', false, jobs);
+
+    assert(process.stderr.write.calledWith(sinon.match('test failures')));
     assert(process.exit.calledOnce);
     assert(process.exit.calledWith(1));
 
