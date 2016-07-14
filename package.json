@@ -1,6 +1,6 @@
 {
   "name": "easy-sauce",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "Simple JavaScript unit testing on the Sauce Labs cloud",
   "main": "./lib/index.js",
   "bin": "./bin/easy-sauce",
