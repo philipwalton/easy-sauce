@@ -170,7 +170,7 @@ The function returns an [EventEmitter](https://nodejs.org/api/events.html#events
 Example Node.js usage:
 
 ```js
-const easySacue = require('easy-sauce');
+const easySauce = require('easy-sauce');
 
 easySauce({
   username: process.env.SAUCE_USERNAME,
@@ -201,7 +201,7 @@ easySauce({
   // A job's status has been updated
   console.log(job.status);
 })
-.on('end', function(passed, jobs) {
+.on('done', function(passed, jobs) {
   // All tests have completed!
   if (passed) {
     console.log('All tests passed!');
