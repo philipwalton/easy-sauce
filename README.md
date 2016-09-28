@@ -191,7 +191,7 @@ easySauce({
       'safari',
       '9'
     ]
-  }
+  ]
 })
 .on('message', function(message) {
   // A message has been emitted, inform the user.

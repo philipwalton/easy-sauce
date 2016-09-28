@@ -1,7 +1,7 @@
 const assert = require('assert');
 const EventEmitter = require('events');
 const fs = require('fs-extra');
-const ngrok = require('ngrok');
+const sauceConnect = require('../lib/sauce-connect');
 const request = require('request');
 const sinon = require('sinon');
 const EasySauce = require('../lib/easy-sauce');
@@ -53,7 +53,11 @@ describe('EasySauce', () => {
         ],
         build: 1,
         name: 'JS Unit Tests',
-        framework: 'mocha'
+        framework: 'mocha',
+        sauceConnect: {
+          username: 'me',
+          accessKey: 'secret'
+        }
       });
     });
 
@@ -83,14 +87,14 @@ describe('EasySauce', () => {
           }
         });
       });
-      sinon.stub(ngrok, 'connect', (port, cb) => {
-        process.nextTick(() => cb(null, 'http://xxx.ngrok.com'));
+      sinon.stub(sauceConnect, 'launcher', (opts, cb) => {
+        process.nextTick(() => cb(null, sauceConnect));
       });
     });
 
     afterEach(() => {
       request.post.restore();
-      ngrok.connect.restore();
+      sauceConnect.launcher.restore();
     });
 
 
@@ -161,9 +165,13 @@ describe('EasySauce', () => {
 
 
   describe('startServer', () => {
+    let es;
+
+    beforeEach(() => {
+      es = new EasySauce(opts);
+    });
 
     it('returns a promise', (done) => {
-      let es = new EasySauce(opts);
       let returnValue = es.startServer();
       assert(returnValue instanceof Promise);
       returnValue.then(() => {
@@ -174,7 +182,6 @@ describe('EasySauce', () => {
 
 
     it('resolves once the server has started', (done) => {
-      let es = new EasySauce(opts);
       es.startServer().then(() => {
         assert(es.server.listening);
         es.server.close();
@@ -184,7 +191,6 @@ describe('EasySauce', () => {
 
 
     it('logs a message upon success', (done) => {
-      let es = new EasySauce(opts);
       sinon.spy(es.logger, 'emit');
 
       es.startServer().then(() => {
@@ -200,12 +206,11 @@ describe('EasySauce', () => {
 
 
     it('rejects if there is an error starting the server', (done) => {
-      let es1 = new EasySauce(opts);
-      es1.startServer().then(() => {
+      es.startServer().then(() => {
         let es2 = new EasySauce(opts);
         es2.startServer().catch((err) => {
           assert(err);
-          es1.server.close();
+          es.server.close();
           done();
         });
       });
@@ -222,29 +227,28 @@ describe('EasySauce', () => {
   describe('createTunnel', () => {
 
     it('returns a promise', () => {
-      sinon.stub(ngrok, 'connect', (port, cb) => {
-        process.nextTick(() => cb(null, 'http://xxx.ngrok.com'));
+      sinon.stub(sauceConnect, 'launcher', (opts, cb) => {
+        process.nextTick(() => cb(null, sauceConnect));
       });
 
       let es = new EasySauce(opts);
       let returnValue = es.createTunnel();
       assert(returnValue instanceof Promise);
 
-      ngrok.connect.restore();
+      sauceConnect.launcher.restore();
     });
 
 
-    it('resolves once the ngrok tunnel is created', (done) => {
-      sinon.stub(ngrok, 'connect', (port, cb) => {
-        process.nextTick(() => cb(null, 'http://xxx.ngrok.com'));
+    it('resolves once the sauce tunnel is created', (done) => {
+      sinon.stub(sauceConnect, 'launcher', (opts, cb) => {
+        process.nextTick(() => cb(null, sauceConnect));
       });
 
       let es = new EasySauce(opts);
       es.createTunnel().then(() => {
-        assert(es.baseUrl);
-        assert(ngrok.connect.calledOnce);
+        assert(sauceConnect.launcher.calledOnce);
 
-        ngrok.connect.restore();
+        sauceConnect.launcher.restore();
         done();
       });
     });
@@ -252,27 +256,26 @@ describe('EasySauce', () => {
 
     it('logs a message on success', (done) => {
       let es = new EasySauce(opts);
-      let baseUrl = 'http://xxx.ngrok.com';
 
       sinon.stub(es.logger, 'emit');
-      sinon.stub(ngrok, 'connect', (port, cb) => {
-        process.nextTick(() => cb(null, baseUrl));
+      sinon.stub(sauceConnect, 'launcher', (opts, cb) => {
+        process.nextTick(() => cb(null, sauceConnect));
       });
 
       es.createTunnel().then(() => {
         assert(es.logger.emit.calledOnce);
         assert(es.logger.emit.calledWith(
-            'message', messages('TUNNEL_CREATED', es.opts.port, baseUrl)));
+            'message', messages('TUNNEL_CREATED', es.opts.port)));
 
         es.logger.emit.restore();
-        ngrok.connect.restore();
+        sauceConnect.launcher.restore();
         done();
       });
     });
 
 
     it('rejects if there is an error creating the tunnel', (done) => {
-      sinon.stub(ngrok, 'connect', (port, cb) => {
+      sinon.stub(sauceConnect, 'launcher', (opts, cb) => {
         process.nextTick(() => cb(new Error()));
       });
 
@@ -280,7 +283,7 @@ describe('EasySauce', () => {
       es.createTunnel().catch((err) => {
         assert(err);
 
-        ngrok.connect.restore();
+        sauceConnect.launcher.restore();
         done();
       });
     });
@@ -338,11 +341,11 @@ describe('EasySauce', () => {
         process.nextTick(() => cb(null, {body: jobsStart}, jobsStart));
       });
 
-      es.baseUrl = 'http://xxx.ngrok.com'; // Stubs baseUrl.
+      let url = `localhost:${es.opts.port}${es.opts.tests}`; // Stubs baseUrl.
       es.startJobs().then(() => {
         assert(es.logger.emit.calledOnce);
         assert(es.logger.emit.calledWith('message',
-            messages('JOBS_STARTED', es.baseUrl + es.opts.tests)));
+            messages('JOBS_STARTED', url)));
 
         es.logger.emit.restore();
         done();
@@ -356,7 +359,6 @@ describe('EasySauce', () => {
       });
 
       let es = new EasySauce(opts);
-      es.baseUrl = 'http://xxx.ngrok.com'; // Stubs baseUrl.
       es.startJobs().catch((err) => {
         assert.equal(err.message,
             messages('JOBS_START_ERROR', '(401) Not authorized'));
@@ -371,7 +373,6 @@ describe('EasySauce', () => {
       });
 
       let es = new EasySauce(opts);
-      es.baseUrl = 'http://xxx.ngrok.com'; // Stubs baseUrl.
       es.startJobs().catch((err) => {
         assert(err instanceof Error);
         done();
