@@ -70,6 +70,10 @@ Options:
                     "jasmine", "qunit", "YUI Test", or "custom".
                     Defaults to "mocha".
                     See https://goo.gl/5KfjDS for details.
+                    
+  -T, --tunnel      Tunnel which will be created for running tests.
+                    This can be "ngrok", "sauce-connect".
+                    Defaults to "ngrok".
 
   -h, --help        Displays this help message.
 

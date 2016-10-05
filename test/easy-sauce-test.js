@@ -2,10 +2,12 @@ const assert = require('assert');
 const EventEmitter = require('events');
 const fs = require('fs-extra');
 const sauceConnect = require('../lib/sauce-connect');
+const ngrok = require('ngrok');
 const request = require('request');
 const sinon = require('sinon');
 const EasySauce = require('../lib/easy-sauce');
 const messages = require('../lib/messages');
+const path = require('path');
 
 
 var opts = {
@@ -57,7 +59,8 @@ describe('EasySauce', () => {
         sauceConnect: {
           username: 'me',
           accessKey: 'secret'
-        }
+        },
+        tunnel: 'ngrok'
       });
     });
 
@@ -87,14 +90,14 @@ describe('EasySauce', () => {
           }
         });
       });
-      sinon.stub(sauceConnect, 'launcher', (opts, cb) => {
-        process.nextTick(() => cb(null, sauceConnect));
+      sinon.stub(ngrok, 'connect', (port, cb) => {
+        process.nextTick(() => cb(null, 'http://xxx.ngrok.com'));
       });
     });
 
     afterEach(() => {
       request.post.restore();
-      sauceConnect.launcher.restore();
+      ngrok.connect.restore();
     });
 
 
@@ -218,13 +221,134 @@ describe('EasySauce', () => {
 
   });
 
-
   //
   // EasySauce::createTunnel()
   // -------------------------------------------------------------------------
 
-
   describe('createTunnel', () => {
+
+    it('runNgrok was called', (done) => {
+      sinon.stub(ngrok, 'connect', (opts, cb) => {
+        process.nextTick(() => cb(null, 'http://xxx.ngrok.com'));
+      });
+
+      let es = new EasySauce(opts);
+      sinon.spy(es, 'runNgrok');
+
+      es.createTunnel().then(() => {
+        assert(es.runNgrok.calledOnce);
+
+        ngrok.connect.restore();
+        done();
+      });
+    });
+
+    it('runSauceConnect was called', (done) => {
+      sinon.stub(sauceConnect, 'launcher', (opts, cb) => {
+        process.nextTick(() => cb(null, sauceConnect));
+      });
+
+      let opts1 = Object.assign({}, opts, {tunnel: 'sauce-connect'});
+      let es = new EasySauce(opts1);
+      sinon.spy(es, 'runSauceConnect');
+
+      es.createTunnel().then(() => {
+        assert(es.runSauceConnect.calledOnce);
+
+        sauceConnect.launcher.restore();
+        done();
+      });
+    });
+
+    it('throws if wrong tunnel name was passed', (done) => {
+      let opts1 = Object.assign({}, opts, {tunnel: 'wring-tunnel-name'});
+      let es = new EasySauce(opts1);
+
+      assert.throws(es.createTunnel, Error,
+        messages('WRONG_TUNNEL_NAME', es.opts.tunnel));
+
+      done();
+    });
+  });
+
+  //
+  // EasySauce::runNgrok()
+  // -------------------------------------------------------------------------
+
+
+  describe('runNgrok', () => {
+
+    it('returns a promise', () => {
+      sinon.stub(ngrok, 'connect', (opts, cb) => {
+        process.nextTick(() => cb(null, 'http://xxx.ngrok.com'));
+      });
+
+      let es = new EasySauce(opts);
+      let returnValue = es.runNgrok();
+      assert(returnValue instanceof Promise);
+
+      ngrok.connect.restore();
+    });
+
+
+    it('resolves once the ngrok tunnel is created', (done) => {
+      sinon.stub(ngrok, 'connect', (opts, cb) => {
+        process.nextTick(() => cb(null, 'http://xxx.ngrok.com'));
+      });
+
+      let es = new EasySauce(opts);
+      es.runNgrok().then(() => {
+        assert(ngrok.connect.calledOnce);
+
+        ngrok.connect.restore();
+        done();
+      });
+    });
+
+
+    it('logs a message on success', (done) => {
+      let es = new EasySauce(opts);
+
+      sinon.stub(es.logger, 'emit');
+      sinon.stub(ngrok, 'connect', (opts, cb) => {
+        process.nextTick(() => cb(null, 'http://xxx.ngrok.com'));
+      });
+
+      es.runNgrok().then(() => {
+        assert(es.logger.emit.calledOnce);
+        assert(es.logger.emit.calledWith(
+          'message', messages('TUNNEL_CREATED', es.opts.port)));
+
+        es.logger.emit.restore();
+        ngrok.connect.restore();
+        done();
+      });
+    });
+
+
+    it('rejects if there is an error creating the tunnel', (done) => {
+      sinon.stub(ngrok, 'connect', (opts, cb) => {
+        process.nextTick(() => cb(new Error()));
+      });
+
+      let es = new EasySauce(opts);
+      es.runNgrok().catch((err) => {
+        assert(err);
+
+        ngrok.connect.restore();
+        done();
+      });
+    });
+
+  });
+
+
+  //
+  // EasySauce::runSauceConnect()
+  // -------------------------------------------------------------------------
+
+
+  describe('runSauceConnect', () => {
 
     it('returns a promise', () => {
       sinon.stub(sauceConnect, 'launcher', (opts, cb) => {
@@ -232,7 +356,7 @@ describe('EasySauce', () => {
       });
 
       let es = new EasySauce(opts);
-      let returnValue = es.createTunnel();
+      let returnValue = es.runSauceConnect();
       assert(returnValue instanceof Promise);
 
       sauceConnect.launcher.restore();
@@ -245,7 +369,7 @@ describe('EasySauce', () => {
       });
 
       let es = new EasySauce(opts);
-      es.createTunnel().then(() => {
+      es.runSauceConnect().then(() => {
         assert(sauceConnect.launcher.calledOnce);
 
         sauceConnect.launcher.restore();
@@ -262,7 +386,7 @@ describe('EasySauce', () => {
         process.nextTick(() => cb(null, sauceConnect));
       });
 
-      es.createTunnel().then(() => {
+      es.runSauceConnect().then(() => {
         assert(es.logger.emit.calledOnce);
         assert(es.logger.emit.calledWith(
             'message', messages('TUNNEL_CREATED', es.opts.port)));
@@ -280,7 +404,7 @@ describe('EasySauce', () => {
       });
 
       let es = new EasySauce(opts);
-      es.createTunnel().catch((err) => {
+      es.runSauceConnect().catch((err) => {
         assert(err);
 
         sauceConnect.launcher.restore();
@@ -341,11 +465,12 @@ describe('EasySauce', () => {
         process.nextTick(() => cb(null, {body: jobsStart}, jobsStart));
       });
 
-      let url = `localhost:${es.opts.port}${es.opts.tests}`; // Stubs baseUrl.
+      es.baseUrl = 'http://xxx.ngrok.com'; // Stubs baseUrl.
       es.startJobs().then(() => {
         assert(es.logger.emit.calledOnce);
         assert(es.logger.emit.calledWith('message',
-            messages('JOBS_STARTED', url)));
+            messages('JOBS_STARTED',
+              path.normalize(`${es.baseUrl}/${es.opts.tests}`))));
 
         es.logger.emit.restore();
         done();
