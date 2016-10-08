@@ -7,7 +7,6 @@ const request = require('request');
 const sinon = require('sinon');
 const EasySauce = require('../lib/easy-sauce');
 const messages = require('../lib/messages');
-const path = require('path');
 
 
 var opts = {
@@ -470,7 +469,7 @@ describe('EasySauce', () => {
         assert(es.logger.emit.calledOnce);
         assert(es.logger.emit.calledWith('message',
             messages('JOBS_STARTED',
-              path.normalize(`${es.baseUrl}/${es.opts.tests}`))));
+              es.baseUrl + es.opts.tests)));
 
         es.logger.emit.restore();
         done();
