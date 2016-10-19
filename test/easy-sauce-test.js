@@ -59,7 +59,7 @@ describe('EasySauce', () => {
           username: 'me',
           accessKey: 'secret'
         },
-        tunnel: 'ngrok'
+        service: 'ngrok'
       });
     });
 
@@ -247,7 +247,7 @@ describe('EasySauce', () => {
         process.nextTick(() => cb(null, sauceConnect));
       });
 
-      let opts1 = Object.assign({}, opts, {tunnel: 'sauce-connect'});
+      let opts1 = Object.assign({}, opts, {service: 'sauce-connect'});
       let es = new EasySauce(opts1);
       sinon.spy(es, 'runSauceConnect');
 
@@ -259,12 +259,12 @@ describe('EasySauce', () => {
       });
     });
 
-    it('throws if wrong tunnel name was passed', (done) => {
-      let opts1 = Object.assign({}, opts, {tunnel: 'wring-tunnel-name'});
+    it('throws if wrong service name was passed', (done) => {
+      let opts1 = Object.assign({}, opts, {service: 'wring-service-name'});
       let es = new EasySauce(opts1);
 
       assert.throws(es.createTunnel, Error,
-        messages('WRONG_TUNNEL_NAME', es.opts.tunnel));
+        messages('WRONG_SERVICE_NAME', es.opts.service));
 
       done();
     });
