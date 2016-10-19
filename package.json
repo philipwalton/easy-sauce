@@ -40,6 +40,7 @@
     "minimist": "^1.2.0",
     "ngrok": "^2.1.7",
     "request": "^2.72.0",
+    "sauce-connect-launcher": "^0.16.0",
     "serve-static": "^1.10.2"
   },
   "devDependencies": {

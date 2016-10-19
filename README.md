@@ -70,6 +70,10 @@ Options:
                     "jasmine", "qunit", "YUI Test", or "custom".
                     Defaults to "mocha".
                     See https://goo.gl/5KfjDS for details.
+                    
+  -s, --service     Service which will be created for running tests.
+                    This can be "ngrok", "sauce-connect".
+                    Defaults to "ngrok".
 
   -h, --help        Displays this help message.
 
@@ -191,7 +195,7 @@ easySauce({
       'safari',
       '9'
     ]
-  }
+  ]
 })
 .on('message', function(message) {
   // A message has been emitted, inform the user.
