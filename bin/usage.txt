@@ -3,45 +3,55 @@ Usage: easy-sauce [options]
 The easy-sauce command can by run by invoking the easy-sauce binary and passing
 it a list of optional configuration options. The configuration options specified
 will be merged with the the base configuration options set in either the
-package.json file of the current working directory (under the"easySauce" key),
+package.json file of the current working directory (under the "easySauce" key),
 or, if the -c or --config option is specified, the JSON file at that location.
 
 Options:
 
-  -c, --config      A JSON config file to use instead of package.json.
+  -c, --config       A JSON config file to use instead of package.json.
 
-  -u, --username    Your Sauce Labs username.
-                    This defaults to the SAUCE_USERNAME environment variable.
+  -u, --username     Your Sauce Labs username.
+                     This defaults to the SAUCE_USERNAME environment variable.
 
-  -k, --key         Your Sauce Labs access key.
-                    This defaults to the SAUCE_ACCESS_KEY environment variable.
+  -k, --key          Your Sauce Labs access key.
+                     This defaults to the SAUCE_ACCESS_KEY environment variable.
 
-  -P, --platforms   An array of platform/browser/version capabilities.
-                    This should be a JSON array of arrays, e.g.: '[["Windows
-                    10", "chrome", "latest"], ["OS X 10.11", "safari", "9"]]'.
-                    See https://goo.gl/tPnZDO for details.
+  -P, --platforms    An array of platform/browser/version capabilities.
+                     This should be a JSON array of arrays, e.g.: '[["Windows
+                     10", "chrome", "latest"], ["OS X 10.11", "safari", "9"]]'.
+                     See https://goo.gl/tPnZDO for details.
 
-  -t, --tests       The URL path to the file that loads the tests.
-                    Defaults to "/test/"
+  -t, --tests        The URL path to the file that loads the tests.
+                     Defaults to "/test/"
 
-  -p, --port        The port to run the local server on.
-                    Defaults to "1337"
+  -p, --port         The port to run the local server on.
+                     Defaults to "8080"
 
-  -b, --build       The build number to pass to Sauce Labs.
-                    Defaults to the current time: $(date +%s)
+  -b, --build        The build number to pass to Sauce Labs.
+                     Defaults to the current time: $(date +%s)
 
-  -n, --name        The name of the build to pass to Sauce Labs.
-                    Defaults to "JS Unit Tests".
+  -n, --name         The name of the build to pass to Sauce Labs.
+                     Defaults to "JS Unit Tests".
 
-  -f, --framework   The test framework you're using. This can be "mocha",
-                    "jasmine", "qunit", "YUI Test", or "custom".
-                    Defaults to "mocha".
-                    See https://goo.gl/5KfjDS for details.
+  -f, --framework    The test framework you're using. This can be "mocha",
+                     "jasmine", "qunit", "YUI Test", or "custom".
+                     Defaults to "mocha".
+                     See https://goo.gl/5KfjDS for details.
 
-  -s, --service     Service which will be created for running tests.
-                    This can be "ngrok", "sauce-connect".
-                    Defaults to "ngrok".
+  -s, --service      Service used to create the tunnel to localhost.
+                     This can be "localtunnel", "ngrok", or "sauce-connect".
+                     Defaults to "localtunnel".
+                     See package details here:
+                     https://www.npmjs.com/package/localtunnel
+                     https://www.npmjs.com/package/ngrok
+                     https://www.npmjs.com/package/sauce-connect-launcher
 
-  -h, --help        Displays this help message.
+  --service-options  JSON configuration options to be passed to the tunnel
+                     service. This is useful if you have a paid ngrok account
+                     or need to specify additional sauce-connect options.
+                     Example:
+                     -s='sauce-connect' --service-options='{"verbose":true}'
 
-  -V, --version     Display the easy-sauce version number.
+  -h, --help         Displays this help message.
+
+  -V, --version      Display the easy-sauce version number.
