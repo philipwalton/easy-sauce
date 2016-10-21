@@ -8,6 +8,10 @@
         "8"
       ]
     ],
+    "service": "sauce-connect",
+    "serviceOptions": {
+      "verbose": true
+    },
     "build": "1"
   }
 }

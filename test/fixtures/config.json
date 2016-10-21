@@ -17,5 +17,9 @@
       "safari",
       "9"
     ]
-  ]
+  ],
+  "service": "sauce-connect",
+  "serviceOptions": {
+    "verbose": true
+  }
 }

@@ -89,9 +89,8 @@ describe('EasySauce', () => {
         });
       });
 
-      sinon.stub(LocaltunnelService, 'nativeServiceModule', (opt, cb) => {
-        cb(null, {url: BASE_URL, close: sinon.spy()});
-      });
+      sinon.stub(LocaltunnelService, 'nativeServiceModule',
+          (port, opts, cb) => cb(null, {url: BASE_URL, close: sinon.spy()}));
     });
 
 
@@ -227,9 +226,8 @@ describe('EasySauce', () => {
   describe('createTunnel', () => {
 
     it('returns a promise', () => {
-      sinon.stub(LocaltunnelService, 'nativeServiceModule', (opt, cb) => {
-        cb(null, {url: BASE_URL, close: sinon.spy()});
-      });
+      sinon.stub(LocaltunnelService, 'nativeServiceModule',
+          (port, opts, cb) => cb(null, {url: BASE_URL, close: sinon.spy()}));
 
       let es = new EasySauce(opts);
       let returnValue = es.createTunnel();
@@ -240,9 +238,8 @@ describe('EasySauce', () => {
 
 
     it('resolves once the service tunnel is created', (done) => {
-      sinon.stub(LocaltunnelService, 'nativeServiceModule', (opt, cb) => {
-        cb(null, {url: BASE_URL, close: sinon.spy()});
-      });
+      sinon.stub(LocaltunnelService, 'nativeServiceModule',
+          (port, opts, cb) => cb(null, {url: BASE_URL, close: sinon.spy()}));
 
       let es = new EasySauce(opts);
       es.createTunnel().then(() => {
@@ -256,9 +253,8 @@ describe('EasySauce', () => {
 
 
     it('logs a message on success', (done) => {
-      sinon.stub(LocaltunnelService, 'nativeServiceModule', (opt, cb) => {
-        cb(null, {url: BASE_URL, close: sinon.spy()});
-      });
+      sinon.stub(LocaltunnelService, 'nativeServiceModule',
+          (port, opts, cb) => cb(null, {url: BASE_URL, close: sinon.spy()}));
 
       let es = new EasySauce(opts);
       sinon.stub(es.logger, 'emit');
@@ -276,9 +272,8 @@ describe('EasySauce', () => {
 
 
     it('rejects if there is an error creating the tunnel', (done) => {
-      sinon.stub(LocaltunnelService, 'nativeServiceModule', (opt, cb) => {
-        cb(new Error('Error creating tunnel'));
-      });
+      sinon.stub(LocaltunnelService, 'nativeServiceModule',
+          (opt, cb) => cb(new Error('Error creating tunnel')));
 
       let es = new EasySauce(opts);
       es.createTunnel().catch((err) => {

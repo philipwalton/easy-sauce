@@ -181,17 +181,21 @@ describe('cli', () => {
   it('uses longhand command line options if present', () => {
     let platforms = '[["Windows 10", "chrome", "latest"],' +
         '["OS X 10.11", "firefox","latest"],["OS X 10.11", "safari", "9"]]';
+    let serviceOptions = '{"verbose":true}';
 
     cli({
-      platforms: platforms,
-      tests: '/tests/suite.html',
-      port: 1979,
-      build: '1',
-      name: 'Unit Tests',
-      framework: 'custom'
+      'platforms': platforms,
+      'tests': '/tests/suite.html',
+      'port': 1979,
+      'build': '1',
+      'name': 'Unit Tests',
+      'framework': 'custom',
+      'service': 'sauce-connect',
+      'service-options': serviceOptions
     });
 
     let stub = EasySauce.prototype.runTestsAndLogResults;
+
     assert(stub.calledOnce);
     assert.deepEqual(stub.lastCall.thisValue.opts.platforms, [
       ['Windows 10', 'chrome', 'latest'],
@@ -203,6 +207,26 @@ describe('cli', () => {
     assert.equal(stub.lastCall.thisValue.opts.build, '1');
     assert.equal(stub.lastCall.thisValue.opts.name, 'Unit Tests');
     assert.equal(stub.lastCall.thisValue.opts.framework, 'custom');
+    assert.equal(stub.lastCall.thisValue.opts.service, 'sauce-connect');
+    assert.deepEqual(stub.lastCall.thisValue.opts.serviceOptions,
+        {verbose: true});
+  });
+
+
+  it('errors if given an unparseable --service-options option', () => {
+    sinon.stub(process.stderr, 'write');
+    sinon.stub(process, 'exit');
+
+    cli({'service-options': 'invalid'});
+
+    assert(process.exit.calledOnce);
+    assert(process.exit.alwaysCalledWith(1));
+    assert(process.stderr.write.calledOnce);
+    assert(process.stderr.write.alwaysCalledWith(
+        sinon.match('could not be parsed as JSON')));
+
+    process.stderr.write.restore();
+    process.exit.restore();
   });
 
 
