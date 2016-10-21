@@ -59,17 +59,16 @@ describe('NgrokService', () => {
   describe('stop', () => {
 
     it('closes an active tunnel process', (done) => {
-      sinon.stub(ngrok, 'disconnect');
+      sinon.stub(ngrok, 'kill');
       sinon.stub(NgrokService, 'nativeServiceModule', (opt, cb) => {
         cb(null, NGROK_BASE_URL);
       });
 
       new NgrokService().start({port: 8080}).then((service) => {
         service.stop();
-        assert(ngrok.disconnect.calledOnce);
-        assert(ngrok.disconnect.calledWith(NGROK_BASE_URL));
+        assert(ngrok.kill.calledOnce);
 
-        ngrok.disconnect.restore();
+        ngrok.kill.restore();
         NgrokService.nativeServiceModule.restore();
         done();
       });
