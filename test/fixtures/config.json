@@ -1,6 +1,6 @@
 {
   "port": 1979,
-  "tests": "/tests/suite.html",
+  "testPath": "/tests/suite.html",
   "platforms": [
     [
       "Windows 10",

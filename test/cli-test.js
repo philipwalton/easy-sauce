@@ -68,11 +68,11 @@ describe('cli', () => {
     let configOpts = fs.readJsonSync(configFile);
 
     assert.equal(firstThisValue.opts.port, configOpts.port);
-    assert.equal(firstThisValue.opts.tests, configOpts.tests);
+    assert.equal(firstThisValue.opts.testPath, configOpts.testPath);
     assert.deepEqual(firstThisValue.opts.platforms, configOpts.platforms);
 
     assert.equal(secondThisValue.opts.port, configOpts.port);
-    assert.equal(secondThisValue.opts.tests, configOpts.tests);
+    assert.equal(secondThisValue.opts.testPath, configOpts.testPath);
     assert.deepEqual(secondThisValue.opts.platforms, configOpts.platforms);
   });
 
@@ -170,7 +170,7 @@ describe('cli', () => {
       ['OS X 10.11', 'firefox', 'latest'],
       ['OS X 10.11', 'safari', '9']
     ]);
-    assert.equal(stub.lastCall.thisValue.opts.tests, '/tests/suite.html');
+    assert.equal(stub.lastCall.thisValue.opts.testPath, '/tests/suite.html');
     assert.equal(stub.lastCall.thisValue.opts.port, 1979);
     assert.equal(stub.lastCall.thisValue.opts.build, '1');
     assert.equal(stub.lastCall.thisValue.opts.name, 'Unit Tests');
@@ -185,7 +185,7 @@ describe('cli', () => {
 
     cli({
       'platforms': platforms,
-      'tests': '/tests/suite.html',
+      'testPath': '/tests/suite.html',
       'port': 1979,
       'build': '1',
       'name': 'Unit Tests',
@@ -202,7 +202,7 @@ describe('cli', () => {
       ['OS X 10.11', 'firefox', 'latest'],
       ['OS X 10.11', 'safari', '9']
     ]);
-    assert.equal(stub.lastCall.thisValue.opts.tests, '/tests/suite.html');
+    assert.equal(stub.lastCall.thisValue.opts.testPath, '/tests/suite.html');
     assert.equal(stub.lastCall.thisValue.opts.port, 1979);
     assert.equal(stub.lastCall.thisValue.opts.build, '1');
     assert.equal(stub.lastCall.thisValue.opts.name, 'Unit Tests');
@@ -264,7 +264,7 @@ describe('cli', () => {
 
     assert(stub.calledOnce);
     assert.equal(stub.firstCall.thisValue.opts.port, 9999);
-    assert.equal(stub.firstCall.thisValue.opts.tests, configOpts.tests);
+    assert.equal(stub.firstCall.thisValue.opts.testPath, configOpts.testPath);
   });
 
 

@@ -21,7 +21,7 @@ Options:
                      10", "chrome", "latest"], ["OS X 10.11", "safari", "9"]]'.
                      See https://goo.gl/tPnZDO for details.
 
-  -t, --tests        The URL path to the file that loads the tests.
+  -t, --test-path    The URL path to the file that loads the tests.
                      Defaults to "/test/"
 
   -p, --port         The port to run the local server on.
