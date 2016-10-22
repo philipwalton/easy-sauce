@@ -48,7 +48,7 @@ describe('EasySauce', () => {
         username: 'me',
         key: 'secret',
         port: 1979,
-        tests: '/test/',
+        testPath: '/test/',
         platforms: [
           ['Windows 10', 'chrome', 'latest'],
           ['OS X 10.11', 'firefox', 'latest'],
@@ -344,7 +344,7 @@ describe('EasySauce', () => {
         assert(es.logger.emit.calledOnce);
         assert(es.logger.emit.calledWith(
             'message',
-            messages('JOBS_STARTED', es.service.baseUrl + es.opts.tests)));
+            messages('JOBS_STARTED', es.service.baseUrl + es.opts.testPath)));
 
         es.logger.emit.restore();
         done();

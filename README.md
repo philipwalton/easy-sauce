@@ -47,14 +47,14 @@ Options:
                      This defaults to the SAUCE_USERNAME environment variable.
 
   -k, --key          Your Sauce Labs access key.
-                     This defaults to the SAUCE_ACCESS_KEY environmentvariable.
+                     This defaults to the SAUCE_ACCESS_KEY environment variable.
 
   -P, --platforms    An array of platform/browser/version capabilities.
                      This should be a JSON array of arrays, e.g.: '[["Windows
                      10", "chrome", "latest"], ["OS X 10.11", "safari", "9"]]'.
                      See https://goo.gl/tPnZDO for details.
 
-  -t, --tests        The URL path to the file that loads the tests.
+  -t, --test-path    The URL path to the file that loads the tests.
                      Defaults to "/test/"
 
   -p, --port         The port to run the local server on.
@@ -74,6 +74,7 @@ Options:
   -s, --service      Service used to create the tunnel to localhost.
                      This can be "localtunnel", "ngrok", or "sauce-connect".
                      Defaults to "localtunnel".
+                     See package details here:
                      https://www.npmjs.com/package/localtunnel
                      https://www.npmjs.com/package/ngrok
                      https://www.npmjs.com/package/sauce-connect-launcher
@@ -107,8 +108,8 @@ If you're testing an npm package, you can skip the external configuration file a
   },
   // ...
   "easySauce": {
-    "tests": "/tests/all-tests.html",
     "port": "8080",
+    "testPath": "/test/runner.html",
     "platforms": [
       [
         "Windows 10",
