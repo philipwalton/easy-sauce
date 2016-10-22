@@ -1,6 +1,10 @@
 Changelog
 =========
 
+### 0.4.1 (October 22, 2016)
+
+* Fixed remaining "tests" configuration options not renamed
+
 ### 0.4.0 (October 21, 2016)
 
 * Changed default tunnel service from ngrok to localtunnel
