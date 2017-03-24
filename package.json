@@ -31,7 +31,7 @@
     "email": "philip@philipwalton.com",
     "url": "http://philipwalton.com"
   },
-  "license": "MIT",
+  "license": "ISC",
   "bugs": {
     "url": "https://github.com/philipwalton/easy-sauce/issues"
   },
