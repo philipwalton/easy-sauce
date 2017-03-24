@@ -18,7 +18,7 @@ describe('NgrokService', () => {
   describe('start', () => {
 
     it('returns a promise that resolves when the service is up', (done) => {
-      sinon.stub(NgrokService, 'nativeServiceModule', (opt, cb) => {
+      sinon.stub(NgrokService, 'nativeServiceModule').callsFake((pt, cb) => {
         cb(null, NGROK_BASE_URL);
       });
 
@@ -34,7 +34,7 @@ describe('NgrokService', () => {
     });
 
     it('rejects if the service errors while starting', (done) => {
-      sinon.stub(NgrokService, 'nativeServiceModule', (opt, cb) => {
+      sinon.stub(NgrokService, 'nativeServiceModule').callsFake((pt, cb) => {
         cb(new Error('cannot start service!'));
       });
 
@@ -60,7 +60,7 @@ describe('NgrokService', () => {
 
     it('closes an active tunnel process', (done) => {
       sinon.stub(ngrok, 'kill');
-      sinon.stub(NgrokService, 'nativeServiceModule', (opt, cb) => {
+      sinon.stub(NgrokService, 'nativeServiceModule').callsFake((pt, cb) => {
         cb(null, NGROK_BASE_URL);
       });
 

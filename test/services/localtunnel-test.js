@@ -21,8 +21,10 @@ describe('LocaltunnelService', () => {
         url: LOCALTUNNEL_BASE_URL,
         close: sinon.spy(),
       };
-      sinon.stub(LocaltunnelService, 'nativeServiceModule',
-          (port, opts, cb) => cb(null, localtunnelProcess));
+      sinon.stub(LocaltunnelService, 'nativeServiceModule')
+          .callsFake((port, opts, cb) => {
+        cb(null, localtunnelProcess);
+      });
 
       new LocaltunnelService().start({port: 8080}).then((service) => {
         assert(LocaltunnelService.nativeServiceModule.calledOnce);
@@ -37,8 +39,10 @@ describe('LocaltunnelService', () => {
     });
 
     it('rejects if the service errors while starting', (done) => {
-      sinon.stub(LocaltunnelService, 'nativeServiceModule',
-          (port, opts, cb) => cb(new Error('cannot start service!')));
+      sinon.stub(LocaltunnelService, 'nativeServiceModule')
+          .callsFake((port, opts, cb) => {
+        cb(new Error('cannot start service!'));
+      });
 
       new LocaltunnelService().start({port: 8080}).catch((err) => {
         assert(LocaltunnelService.nativeServiceModule.calledOnce);
@@ -65,8 +69,8 @@ describe('LocaltunnelService', () => {
         url: LOCALTUNNEL_BASE_URL,
         close: sinon.spy(),
       };
-      sinon.stub(LocaltunnelService, 'nativeServiceModule',
-          (port, opts, cb) => cb(null, localtunnelProcess));
+      sinon.stub(LocaltunnelService, 'nativeServiceModule')
+          .callsFake((port, opts, cb) => cb(null, localtunnelProcess));
 
       new LocaltunnelService().start({port: 8080}).then((service) => {
         service.stop();

@@ -76,7 +76,7 @@ describe('EasySauce', () => {
       let jobsStart = getFixture('jobs-start');
       let jobsFinishPass = getFixture('jobs-finish-pass');
 
-      sinon.stub(request, 'post', (opts, cb) => {
+      sinon.stub(request, 'post').callsFake((opts, cb) => {
         process.nextTick(() => {
           switch (request.post.callCount) {
             case 1:
@@ -89,8 +89,10 @@ describe('EasySauce', () => {
         });
       });
 
-      sinon.stub(LocaltunnelService, 'nativeServiceModule',
-          (port, opts, cb) => cb(null, {url: BASE_URL, close: sinon.spy()}));
+      sinon.stub(LocaltunnelService, 'nativeServiceModule')
+          .callsFake((port, opts, cb) => {
+        cb(null, {url: BASE_URL, close: sinon.spy()});
+      });
     });
 
 
@@ -226,8 +228,10 @@ describe('EasySauce', () => {
   describe('createTunnel', () => {
 
     it('returns a promise', () => {
-      sinon.stub(LocaltunnelService, 'nativeServiceModule',
-          (port, opts, cb) => cb(null, {url: BASE_URL, close: sinon.spy()}));
+      sinon.stub(LocaltunnelService, 'nativeServiceModule')
+          .callsFake((port, opts, cb) => {
+        cb(null, {url: BASE_URL, close: sinon.spy()});
+      });
 
       let es = new EasySauce(opts);
       let returnValue = es.createTunnel();
@@ -238,8 +242,10 @@ describe('EasySauce', () => {
 
 
     it('resolves once the service tunnel is created', (done) => {
-      sinon.stub(LocaltunnelService, 'nativeServiceModule',
-          (port, opts, cb) => cb(null, {url: BASE_URL, close: sinon.spy()}));
+      sinon.stub(LocaltunnelService, 'nativeServiceModule')
+          .callsFake((port, opts, cb) => {
+        cb(null, {url: BASE_URL, close: sinon.spy()});
+      });
 
       let es = new EasySauce(opts);
       es.createTunnel().then(() => {
@@ -253,8 +259,10 @@ describe('EasySauce', () => {
 
 
     it('logs a message on success', (done) => {
-      sinon.stub(LocaltunnelService, 'nativeServiceModule',
-          (port, opts, cb) => cb(null, {url: BASE_URL, close: sinon.spy()}));
+      sinon.stub(LocaltunnelService, 'nativeServiceModule')
+          .callsFake((port, opts, cb) => {
+        cb(null, {url: BASE_URL, close: sinon.spy()});
+      });
 
       let es = new EasySauce(opts);
       sinon.stub(es.logger, 'emit');
@@ -272,8 +280,10 @@ describe('EasySauce', () => {
 
 
     it('rejects if there is an error creating the tunnel', (done) => {
-      sinon.stub(LocaltunnelService, 'nativeServiceModule',
-          (opt, cb) => cb(new Error('Error creating tunnel')));
+      sinon.stub(LocaltunnelService, 'nativeServiceModule')
+          .callsFake((opt, cb) => {
+        cb(new Error('Error creating tunnel'));
+      });
 
       let es = new EasySauce(opts);
       es.createTunnel().catch((err) => {
@@ -300,7 +310,7 @@ describe('EasySauce', () => {
     afterEach(() => request.post.restore());
 
     it('returns a promise', (done) => {
-      sinon.stub(request, 'post', (opts, cb) => {
+      sinon.stub(request, 'post').callsFake((pts, cb) => {
         process.nextTick(() => {
           cb(null, {body: jobsStart}, jobsStart);
         });
@@ -316,7 +326,7 @@ describe('EasySauce', () => {
 
 
     it('resolves with the result of the API call', (done) => {
-      sinon.stub(request, 'post', (opts, cb) => {
+      sinon.stub(request, 'post').callsFake((pts, cb) => {
         process.nextTick(() => {
           cb(null, {body: jobsStart}, jobsStart);
         });
@@ -336,7 +346,7 @@ describe('EasySauce', () => {
       es.service = {baseUrl: BASE_URL};
 
       sinon.stub(es.logger, 'emit');
-      sinon.stub(request, 'post', (opts, cb) => {
+      sinon.stub(request, 'post').callsFake((pts, cb) => {
         process.nextTick(() => cb(null, {body: jobsStart}, jobsStart));
       });
 
@@ -353,7 +363,7 @@ describe('EasySauce', () => {
 
 
     it('rejects if the API returns an error', (done) => {
-      sinon.stub(request, 'post', (opts, cb) => {
+      sinon.stub(request, 'post').callsFake((pts, cb) => {
         process.nextTick(() => cb(null, {statusCode: 401}, jobsError));
       });
 
@@ -370,7 +380,7 @@ describe('EasySauce', () => {
 
 
     it('rejects if there is an error making the request', (done) => {
-      sinon.stub(request, 'post', (opts, cb) => {
+      sinon.stub(request, 'post').callsFake((pts, cb) => {
         process.nextTick(() => cb(new Error()));
       });
 
@@ -410,7 +420,7 @@ describe('EasySauce', () => {
     afterEach(() => request.post.restore());
 
     it('returns a promise', () => {
-      sinon.stub(request, 'post', (opts, cb) => {
+      sinon.stub(request, 'post').callsFake((pts, cb) => {
         process.nextTick(() => {
           cb(null, {body: jobsFinishPass}, jobsFinishPass);
         });
@@ -424,7 +434,7 @@ describe('EasySauce', () => {
 
 
     it('resolves with the results when all tests have passed', (done) => {
-      sinon.stub(request, 'post', (opts, cb) => {
+      sinon.stub(request, 'post').callsFake((pts, cb) => {
         process.nextTick(() => {
           switch (request.post.callCount) {
             case 1:
@@ -455,7 +465,7 @@ describe('EasySauce', () => {
 
 
     it('resolves with the results when some tests have failed', (done) => {
-      sinon.stub(request, 'post', (opts, cb) => {
+      sinon.stub(request, 'post').callsFake((pts, cb) => {
         process.nextTick(() => {
           switch (request.post.callCount) {
             case 1:
@@ -486,7 +496,7 @@ describe('EasySauce', () => {
 
 
     it('resolves with empty results when tests were cancelled', (done) => {
-      sinon.stub(request, 'post', (opts, cb) => {
+      sinon.stub(request, 'post').callsFake((pts, cb) => {
         process.nextTick(() => {
           switch (request.post.callCount) {
             case 1:
@@ -514,7 +524,7 @@ describe('EasySauce', () => {
       let es = new EasySauce(opts);
 
       sinon.stub(es.logger, 'emit');
-      sinon.stub(request, 'post', (opts, cb) => {
+      sinon.stub(request, 'post').callsFake((pts, cb) => {
         process.nextTick(() => {
           switch (request.post.callCount) {
             case 1:
@@ -578,7 +588,7 @@ describe('EasySauce', () => {
 
 
     it('rejects if the API returns an error', (done) => {
-      sinon.stub(request, 'post', (opts, cb) => {
+      sinon.stub(request, 'post').callsFake((pts, cb) => {
         process.nextTick(() => {
           cb(null, {statusCode: 401}, jobsError);
         });
@@ -596,7 +606,7 @@ describe('EasySauce', () => {
 
 
     it('rejects if there is an error making the request', (done) => {
-      sinon.stub(request, 'post', (opts, cb) => {
+      sinon.stub(request, 'post').callsFake((pts, cb) => {
         process.nextTick(() => cb(new Error()));
       });
 

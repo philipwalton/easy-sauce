@@ -22,7 +22,7 @@ describe('cli', () => {
 
 
   it('shows the usage info given the -h or --help options', (done) => {
-    sinon.stub(process.stderr, 'write', () => {
+    sinon.stub(process.stderr, 'write').callsFake(() => {
       assert(process.stderr.write.lastCall.calledWith(sinon.match(
           (value) => value.toString().includes('Usage: easy-sauce'))));
 
@@ -38,7 +38,7 @@ describe('cli', () => {
 
 
   it('shows the version given the -V or --version options', (done) => {
-    sinon.stub(process.stderr, 'write', () => {
+    sinon.stub(process.stderr, 'write').callsFake(() => {
       assert(process.stderr.write.lastCall.calledWith(sinon.match(
           (value) => value.toString().includes(pkg.version))));
 

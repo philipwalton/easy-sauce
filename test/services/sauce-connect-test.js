@@ -15,7 +15,8 @@ describe('SauceConnectService', () => {
 
     it('returns a promise that resolves when the service is up', (done) => {
       const sauceConnectProcess = {close: sinon.spy()};
-      sinon.stub(SauceConnectService, 'nativeServiceModule', (opt, cb) => {
+      sinon.stub(SauceConnectService, 'nativeServiceModule')
+          .callsFake((pt, cb) => {
         cb(null, sauceConnectProcess);
       });
 
@@ -35,7 +36,8 @@ describe('SauceConnectService', () => {
     });
 
     it('rejects if the service errors while starting', (done) => {
-      sinon.stub(SauceConnectService, 'nativeServiceModule', (opt, cb) => {
+      sinon.stub(SauceConnectService, 'nativeServiceModule')
+          .callsFake((pt, cb) => {
         cb(new Error('cannot start service!'));
       });
 
@@ -71,7 +73,8 @@ describe('SauceConnectService', () => {
 
     it('closes an active tunnel process', (done) => {
       const sauceConnectProcess = {close: sinon.spy()};
-      sinon.stub(SauceConnectService, 'nativeServiceModule', (opt, cb) => {
+      sinon.stub(SauceConnectService, 'nativeServiceModule')
+          .callsFake((pt, cb) => {
         cb(null, sauceConnectProcess);
       });
 
