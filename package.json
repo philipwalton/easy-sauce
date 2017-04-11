@@ -44,6 +44,7 @@
     "minimist": "^1.2.0",
     "ngrok": "^2.2.6",
     "request": "^2.81.0",
+    "sauce-browsers": "^1.0.0",
     "sauce-connect-launcher": "^1.2.0",
     "serve-static": "^1.12.1"
   },
