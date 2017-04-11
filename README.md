@@ -99,7 +99,7 @@ easy-sauce -c path/to/config.json
 If you're testing an npm package, you can skip the external configuration file and specify your configuration options directly in `package.json` file under the `"easySauce"` key:
 
 
-```js
+```json
 {
   "name": "my-package",
   "version": "1.0.0",
@@ -135,7 +135,7 @@ If you're testing an npm package, you can skip the external configuration file a
 }
 ```
 
-In the above example, the `"tests"` command is also set to `easy-sauce`, so now you can run your tests via npm:
+In the above example, the `"test"` command is also set to `easy-sauce`, so now you can run your tests via npm:
 
 ```
 npm test
@@ -143,6 +143,22 @@ npm test
 
 This setup makes it very easy to integrate with services like Travis CI that use a lot of npm conventions as their default.
 
+Platforms can also be specified using the "zuul" [format](https://github.com/defunctzombie/zuul/wiki/Zuul.yml#browsers-required). For example:
+
+```json
+{
+  "platforms": [
+    {
+      "name": "internet explorer",
+      "version": "oldest..latest"
+    },
+    {
+      "name": "chrome",
+      "version": ["oldest", "latest"]
+    }
+  ]
+}
+```
 
 #### Keeping your Sauce Labs credentials secret
 
