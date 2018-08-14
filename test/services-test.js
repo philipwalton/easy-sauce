@@ -24,7 +24,7 @@ describe('services', () => {
     it('errors if given an unsupported service', () => {
       assert.throws(
           () => services.get('fake-service'),
-          messages('WRONG_SERVICE_NAME', 'fake-service'));
+          {message: messages('WRONG_SERVICE_NAME', 'fake-service')});
     });
 
   });
