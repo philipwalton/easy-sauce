@@ -5,7 +5,7 @@
   "main": "./lib/index.js",
   "bin": "./bin/easy-sauce",
   "scripts": {
-    "lint": "eslint bin/*.js lib/*.js test/*.js",
+    "lint": "eslint bin/easy-sauce lib/**/*.js test/**/*.js",
     "test": "npm run lint && mocha test/*.js test/**/*.js"
   },
   "repository": {
@@ -49,6 +49,7 @@
   },
   "devDependencies": {
     "eslint": "^5.3.0",
+    "eslint-config-google": "^0.9.1",
     "mocha": "^5.2.0",
     "sinon": "^6.1.5"
   }

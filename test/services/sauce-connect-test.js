@@ -5,14 +5,12 @@ const SauceConnectService = require('../../lib/services/sauce-connect');
 
 
 describe('SauceConnectService', () => {
-
   it('extends BaseService', () => {
     const sauceConnect = new SauceConnectService();
-    assert(sauceConnect instanceof BaseService)
+    assert(sauceConnect instanceof BaseService);
   });
 
   describe('start', () => {
-
     it('returns a promise that resolves when the service is up', (done) => {
       const sauceConnectProcess = {close: sinon.spy()};
       sinon.stub(SauceConnectService, 'nativeServiceModule')
@@ -23,7 +21,6 @@ describe('SauceConnectService', () => {
       new SauceConnectService()
           .start({port: 8080, username: 'me', accessKey: 'secret'})
           .then((service) => {
-
         assert(SauceConnectService.nativeServiceModule.calledOnce);
 
         assert(service instanceof SauceConnectService);
@@ -44,7 +41,6 @@ describe('SauceConnectService', () => {
       new SauceConnectService()
           .start({username: 'me', accessKey: 'secret'})
           .catch((err) => {
-
         assert(SauceConnectService.nativeServiceModule.calledOnce);
         assert.equal(err.message, 'cannot start service!');
 
@@ -66,11 +62,9 @@ describe('SauceConnectService', () => {
         done();
       });
     });
-
   });
 
   describe('stop', () => {
-
     it('closes an active tunnel process', (done) => {
       const sauceConnectProcess = {close: sinon.spy()};
       sinon.stub(SauceConnectService, 'nativeServiceModule')
@@ -88,7 +82,5 @@ describe('SauceConnectService', () => {
         done();
       });
     });
-
   });
-
 });

@@ -9,14 +9,12 @@ const NGROK_BASE_URL = 'http://xxx.ngrok.io';
 
 
 describe('NgrokService', () => {
-
   it('extends BaseService', () => {
     const ngrok = new NgrokService();
-    assert(ngrok instanceof BaseService)
+    assert(ngrok instanceof BaseService);
   });
 
   describe('start', () => {
-
     it('returns a promise that resolves when the service is up', (done) => {
       sinon.stub(NgrokService, 'nativeServiceModule').callsFake((pt, cb) => {
         cb(null, NGROK_BASE_URL);
@@ -53,11 +51,9 @@ describe('NgrokService', () => {
         done();
       });
     });
-
   });
 
   describe('stop', () => {
-
     it('closes an active tunnel process', (done) => {
       sinon.stub(ngrok, 'kill');
       sinon.stub(NgrokService, 'nativeServiceModule').callsFake((pt, cb) => {
@@ -73,7 +69,5 @@ describe('NgrokService', () => {
         done();
       });
     });
-
   });
-
 });

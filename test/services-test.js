@@ -7,9 +7,7 @@ const SauceConnectService = require('../lib/services/sauce-connect');
 
 
 describe('services', () => {
-
   describe('get', () => {
-
     it('returns a service instance based on the passed service name', () => {
       const localtunnelService = services.get('localtunnel');
       assert(localtunnelService instanceof LocaltunnelService);
@@ -26,7 +24,5 @@ describe('services', () => {
           () => services.get('fake-service'),
           {message: messages('WRONG_SERVICE_NAME', 'fake-service')});
     });
-
   });
-
 });

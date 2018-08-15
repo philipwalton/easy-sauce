@@ -11,26 +11,23 @@ const LocaltunnelService = require('../lib/services/localtunnel');
 const BASE_URL = 'http://xxx.localtunnel.me';
 
 
-var opts = {
+const opts = {
   username: 'me',
   key: 'secret',
   platforms: [
     ['Windows 10', 'chrome', 'latest'],
     ['OS X 10.11', 'firefox', 'latest'],
-    ['OS X 10.11', 'safari', '9']
-  ]
+    ['OS X 10.11', 'safari', '9'],
+  ],
 };
 
 
 describe('EasySauce', () => {
-
   //
   // EasySauce::constructor()
   // -------------------------------------------------------------------------
 
-
   describe('constructor', () => {
-
     it('merges the default options with the override options', () => {
       let es = new EasySauce({
         username: 'me',
@@ -39,9 +36,9 @@ describe('EasySauce', () => {
         platforms: [
           ['Windows 10', 'chrome', 'latest'],
           ['OS X 10.11', 'firefox', 'latest'],
-          ['OS X 10.11', 'safari', '9']
+          ['OS X 10.11', 'safari', '9'],
         ],
-        build: 1
+        build: 1,
       });
 
       assert.deepEqual(es.opts, {
@@ -52,16 +49,15 @@ describe('EasySauce', () => {
         platforms: [
           ['Windows 10', 'chrome', 'latest'],
           ['OS X 10.11', 'firefox', 'latest'],
-          ['OS X 10.11', 'safari', '9']
+          ['OS X 10.11', 'safari', '9'],
         ],
         build: 1,
         name: 'JS Unit Tests',
         framework: 'mocha',
         service: 'localtunnel',
-        serviceOptions: {}
+        serviceOptions: {},
       });
     });
-
   });
 
 
@@ -71,7 +67,6 @@ describe('EasySauce', () => {
 
 
   describe('runTestsAndLogResults', () => {
-
     beforeEach(() => {
       let jobsStart = getFixture('jobs-start');
       let jobsFinishPass = getFixture('jobs-finish-pass');
@@ -111,7 +106,6 @@ describe('EasySauce', () => {
 
       returnValue.on('done', () => done());
     });
-
   });
 
 
@@ -121,7 +115,6 @@ describe('EasySauce', () => {
 
 
   describe('validateInput', () => {
-
     it('returns a promise', () => {
       let es = new EasySauce(opts);
       let returnValue = es.validateInput();
@@ -151,15 +144,14 @@ describe('EasySauce', () => {
         platforms: [
           ['Windows 10', 'chrome', 'latest'],
           ['OS X 10.11', 'firefox', 'latest'],
-          ['OS X 10.11', 'safari', '9']
-        ]
+          ['OS X 10.11', 'safari', '9'],
+        ],
       });
       es.validateInput().catch((err) => {
         assert.equal(err.message, messages('CREDENTIALS_REQUIRED'));
         done();
       });
     });
-
   });
 
 
@@ -169,7 +161,6 @@ describe('EasySauce', () => {
 
 
   describe('startServer', () => {
-
     it('returns a promise', (done) => {
       let es = new EasySauce(opts);
       let returnValue = es.startServer();
@@ -218,7 +209,6 @@ describe('EasySauce', () => {
         });
       });
     });
-
   });
 
   //
@@ -226,7 +216,6 @@ describe('EasySauce', () => {
   // -------------------------------------------------------------------------
 
   describe('createTunnel', () => {
-
     it('returns a promise', () => {
       sinon.stub(LocaltunnelService, 'nativeServiceModule')
           .callsFake((port, opts, cb) => {
@@ -293,7 +282,6 @@ describe('EasySauce', () => {
         done();
       });
     });
-
   });
 
 
@@ -303,7 +291,6 @@ describe('EasySauce', () => {
 
 
   describe('startJobs', () => {
-
     let jobsStart = getFixture('jobs-start');
     let jobsError = getFixture('jobs-error');
 
@@ -390,7 +377,6 @@ describe('EasySauce', () => {
         done();
       });
     });
-
   });
 
 
@@ -400,7 +386,6 @@ describe('EasySauce', () => {
 
 
   describe('waitForJobsToFinish', () => {
-
     let jobsStart = getFixture('jobs-start');
     let jobsError = getFixture('jobs-error');
 
@@ -419,7 +404,8 @@ describe('EasySauce', () => {
 
     afterEach(() => request.post.restore());
 
-    it('returns a promise', () => {
+
+    it('returns a promise', (done) => {
       sinon.stub(request, 'post').callsFake((pts, cb) => {
         process.nextTick(() => {
           cb(null, {body: jobsFinishPass}, jobsFinishPass);
@@ -428,8 +414,13 @@ describe('EasySauce', () => {
 
       let es = new EasySauce(opts);
       let jobs = jobsStart['js tests'];
+      es.POLL_INTERVAL = 0;
+
       let returnValue = es.waitForJobsToFinish(jobs);
-      assert(returnValue instanceof Promise);
+      returnValue.then(() => {
+        assert(returnValue instanceof Promise);
+        done();
+      });
     });
 
 
@@ -460,7 +451,6 @@ describe('EasySauce', () => {
         assert.deepEqual(jobs, jobsFinishPass['js tests']);
         done();
       });
-
     });
 
 
@@ -491,7 +481,6 @@ describe('EasySauce', () => {
         assert.deepEqual(jobs, jobsFinishFail['js tests']);
         done();
       });
-
     });
 
 
@@ -516,7 +505,6 @@ describe('EasySauce', () => {
         assert.deepEqual(jobs, jobsFinishCancelled['js tests']);
         done();
       });
-
     });
 
 
@@ -549,41 +537,40 @@ describe('EasySauce', () => {
         assert.equal(es.logger.emit.callCount, 8);
         assert(es.logger.emit.getCall(0).calledWith('update', sinon.match({
           status: 'test session in progress',
-          platform: ['Windows 10', 'chrome', 'latest']
+          platform: ['Windows 10', 'chrome', 'latest'],
         })));
         assert(es.logger.emit.getCall(1).calledWith('update', sinon.match({
           status: 'test queued',
-          platform: ['Linux', 'firefox', 'latest']
+          platform: ['Linux', 'firefox', 'latest'],
         })));
         assert(es.logger.emit.getCall(2).calledWith('update', sinon.match({
           status: 'test queued',
-          platform: ['OS X 10.11', 'safari', '9']
+          platform: ['OS X 10.11', 'safari', '9'],
         })));
         assert(es.logger.emit.getCall(3).calledWith('update', sinon.match({
           status: 'test session in progress',
-          platform: ['Linux', 'firefox', 'latest']
+          platform: ['Linux', 'firefox', 'latest'],
         })));
         assert(es.logger.emit.getCall(4).calledWith('update', sinon.match({
           status: 'test finished',
-          platform: ['Windows 10', 'chrome', 'latest']
+          platform: ['Windows 10', 'chrome', 'latest'],
         })));
         assert(es.logger.emit.getCall(5).calledWith('update', sinon.match({
           status: 'test finished',
-          platform: ['Linux', 'firefox', 'latest']
+          platform: ['Linux', 'firefox', 'latest'],
         })));
         assert(es.logger.emit.getCall(6).calledWith('update', sinon.match({
           status: 'test session in progress',
-          platform: ['OS X 10.11', 'safari', '9']
+          platform: ['OS X 10.11', 'safari', '9'],
         })));
         assert(es.logger.emit.getCall(7).calledWith('update', sinon.match({
           status: 'test finished',
-          platform: ['OS X 10.11', 'safari', '9']
+          platform: ['OS X 10.11', 'safari', '9'],
         })));
 
         es.logger.emit.restore();
         done();
       });
-
     });
 
 
@@ -618,7 +605,6 @@ describe('EasySauce', () => {
         done();
       });
     });
-
   });
 
 
@@ -628,7 +614,6 @@ describe('EasySauce', () => {
 
 
   describe('reportResults', () => {
-
     it('reports passed test results', () => {
       let es = new EasySauce(opts);
       let jobs = getFixture('jobs-finish-pass')['js tests'];
@@ -655,9 +640,7 @@ describe('EasySauce', () => {
 
       es.logger.emit.restore();
     });
-
   });
-
 });
 
 

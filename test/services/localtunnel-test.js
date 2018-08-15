@@ -8,14 +8,12 @@ const LOCALTUNNEL_BASE_URL = 'http://xxx.localtunnel.me';
 
 
 describe('LocaltunnelService', () => {
-
   it('extends BaseService', () => {
     const localtunnel = new LocaltunnelService();
-    assert(localtunnel instanceof BaseService)
+    assert(localtunnel instanceof BaseService);
   });
 
   describe('start', () => {
-
     it('returns a promise that resolves when the service is up', (done) => {
       const localtunnelProcess = {
         url: LOCALTUNNEL_BASE_URL,
@@ -59,11 +57,9 @@ describe('LocaltunnelService', () => {
         done();
       });
     });
-
   });
 
   describe('stop', () => {
-
     it('closes an active tunnel process', (done) => {
       const localtunnelProcess = {
         url: LOCALTUNNEL_BASE_URL,
@@ -80,7 +76,5 @@ describe('LocaltunnelService', () => {
         done();
       });
     });
-
   });
-
 });

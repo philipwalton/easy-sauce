@@ -9,7 +9,6 @@ const pkg = require('../package.json');
 
 
 describe('cli', () => {
-
   beforeEach(() => {
     sinon.stub(EasySauce.prototype, 'runTestsAndLogResults')
         .returns(new EventEmitter());
@@ -160,7 +159,7 @@ describe('cli', () => {
       p: 1979,
       b: '1',
       n: 'Unit Tests',
-      f: 'custom'
+      f: 'custom',
     });
 
     let stub = EasySauce.prototype.runTestsAndLogResults;
@@ -168,7 +167,7 @@ describe('cli', () => {
     assert.deepEqual(stub.lastCall.thisValue.opts.platforms, [
       ['Windows 10', 'chrome', 'latest'],
       ['OS X 10.11', 'firefox', 'latest'],
-      ['OS X 10.11', 'safari', '9']
+      ['OS X 10.11', 'safari', '9'],
     ]);
     assert.equal(stub.lastCall.thisValue.opts.testPath, '/tests/suite.html');
     assert.equal(stub.lastCall.thisValue.opts.port, 1979);
@@ -191,7 +190,7 @@ describe('cli', () => {
       'name': 'Unit Tests',
       'framework': 'custom',
       'service': 'sauce-connect',
-      'service-options': serviceOptions
+      'service-options': serviceOptions,
     });
 
     let stub = EasySauce.prototype.runTestsAndLogResults;
@@ -200,7 +199,7 @@ describe('cli', () => {
     assert.deepEqual(stub.lastCall.thisValue.opts.platforms, [
       ['Windows 10', 'chrome', 'latest'],
       ['OS X 10.11', 'firefox', 'latest'],
-      ['OS X 10.11', 'safari', '9']
+      ['OS X 10.11', 'safari', '9'],
     ]);
     assert.equal(stub.lastCall.thisValue.opts.testPath, '/tests/suite.html');
     assert.equal(stub.lastCall.thisValue.opts.port, 1979);
@@ -256,7 +255,7 @@ describe('cli', () => {
     let configFile = './test/fixtures/config.json';
     cli({
       config: configFile,
-      port: 9999
+      port: 9999,
     });
 
     let configOpts = fs.readJsonSync(configFile);
@@ -299,7 +298,7 @@ describe('cli', () => {
     cli({
       username: 'me',
       key: 'secret',
-      platforms: '[["Windows 10", "chrome", "latest"]]'
+      platforms: '[["Windows 10", "chrome", "latest"]]',
     });
     EventEmitter.prototype.on.lastCall.thisValue
         .emit('done', false, jobs);
@@ -312,5 +311,4 @@ describe('cli', () => {
     process.exit.restore();
     EventEmitter.prototype.on.restore();
   });
-
 });
