@@ -39,7 +39,7 @@
   "dependencies": {
     "chalk": "^2.4.1",
     "connect": "^3.6.6",
-    "fs-extra": "^7.0.0",
+    "fs-extra": "^8.0.0",
     "localtunnel": "^1.9.0",
     "minimist": "^1.2.0",
     "ngrok": "^3.0.1",
